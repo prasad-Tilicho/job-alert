@@ -42,6 +42,12 @@ that comes with scraping aggregator sites like Sarkari Result or FreeJobAlert.
 | **SSC** | **Working** - see `ssc.py` | Angular site backed by a public JSON API at `/api/admin/5.1/liveExams` and `/allExams`. No key. Publishes real application closing dates. |
 | UPSC | Blocked | `403 Access Denied` from the Akamai edge, even with a normal user agent. Would fail on CI runners regardless. |
 | IBPS | Dead feed | `www.ibps.in/feed/` returns valid RSS but contains only WordPress placeholder posts ("Hello world!"). Recruitment notices are not published to it. The site also runs a content-copy-protection plugin. |
+| **ISRO** | **Working** - see `isro.py` | Plain HTML table at `/Careers.html`. Mixes vacancies with results and interview schedules, so entries must match an inclusion phrase *and* clear an exclusion list. |
+| RRB (Chandigarh, Chennai, Mumbai) | Reachable, unstructured | 200 OK but notices are not in tables; would need a bespoke parser per board. |
+| TNPSC | Timed out | No response within 18s from this network. |
+| DRDO, India Post | 404 on the paths tried | Careers URLs have moved; worth rechecking. |
+| AIIMS, RBI, Indian Army | Reachable, JS-rendered | 200 OK but no rows or dates in the served HTML. |
+| NTA | Reachable, PDF-only | 155 rows of PDF links; exam notices rather than vacancies. |
 | NCS | No accessible API | Angular SPA; every route including `/robots.txt` returns the same shell, and the JS bundle did not yield an API base. Worth another look. |
 
 Do **not** add aggregator sites such as Sarkari Result or FreeJobAlert. Their
