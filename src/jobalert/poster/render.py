@@ -33,6 +33,7 @@ POSTER_STRINGS = {
     "salary": "SALARY",
     "salary_est": "SALARY (EST.)",
     "age_limit": "AGE LIMIT",
+    "vacancies": "VACANCIES",
     "apply_window": "APPLY WINDOW",
     "fee": "FEE",
 }
@@ -290,6 +291,8 @@ class PosterRenderer:
                 "APPLY WINDOW",
                 f"{job.start_date.strftime('%d %b')} - {job.last_date.strftime('%d %b %Y')}",
             ))
+        if job.vacancies:
+            pairs.append(("VACANCIES", f"{job.vacancies:,} posts" if job.vacancies > 1 else "1 post"))
         if job.age_limit:
             pairs.append(("AGE LIMIT", job.age_limit))
         if job.application_fee:

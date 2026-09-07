@@ -61,6 +61,7 @@ def to_record(job: Job, when: datetime) -> Record:
         "salary": job.salary,
         "salary_is_estimated": job.salary_is_estimated,
         "age_limit": job.age_limit,
+        "vacancies": job.vacancies,
         "application_fee": job.application_fee,
         "description": job.description,
         "start_date": job.start_date.isoformat() if job.start_date else None,

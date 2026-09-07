@@ -74,6 +74,9 @@ def build_caption(job: Job, handle: str, today: date) -> str:
     if job.salary:
         label = "Salary (estimated)" if job.salary_is_estimated else "Salary"
         details.append(f"\U0001f4b0 {label}: {job.salary.strip()}")
+    if job.vacancies:
+        posts = f"{job.vacancies:,} posts" if job.vacancies > 1 else "1 post"
+        details.append(f"\U0001f465 Vacancies: {posts}")
     if job.age_limit:
         details.append(f"\U0001f9d1 Age limit: {job.age_limit.strip()}")
     if job.application_fee:

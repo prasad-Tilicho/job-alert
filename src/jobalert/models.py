@@ -45,6 +45,8 @@ class Job:
     # which is the first thing that rules an applicant in or out.
     age_limit: Optional[str] = None
     application_fee: Optional[str] = None
+    # Number of posts advertised, where the source states it.
+    vacancies: Optional[int] = None
     # Opening and closing of the application window. ``last_date`` is the closing
     # date and drives the poster's APPLY BY strip.
     start_date: Optional[date] = None

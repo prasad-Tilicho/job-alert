@@ -54,6 +54,10 @@ def _card(record: Record) -> str:
     if record.get("salary"):
         suffix = " (estimated)" if record.get("salary_is_estimated") else ""
         meta.append(f'<span class="meta-item">\U0001f4b0 {_esc(record["salary"])}{_esc(suffix)}</span>')
+    if record.get("vacancies"):
+        count = record["vacancies"]
+        posts = f"{count:,} posts" if isinstance(count, int) and count > 1 else f"{count} post"
+        meta.append(f'<span class="meta-item">\U0001f465 {_esc(posts)}</span>')
     if record.get("age_limit"):
         meta.append(f'<span class="meta-item">\U0001f9d1 {_esc(record["age_limit"])}</span>')
     if record.get("application_fee"):

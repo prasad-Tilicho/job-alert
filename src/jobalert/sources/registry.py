@@ -10,6 +10,7 @@ from jobalert.models import Job
 from jobalert.sources.adzuna import AdzunaSource
 from jobalert.sources.arbeitnow import ArbeitnowSource
 from jobalert.sources.base import JobSource
+from jobalert.sources.aai import AaiSource
 from jobalert.sources.cochin import CochinShipyardSource
 from jobalert.sources.isro import IsroSource
 from jobalert.sources.remoteok import RemoteOkSource
@@ -31,7 +32,12 @@ def build_sources(config: "Config") -> List[JobSource]:
     """Return every source the current configuration can actually use."""
     # SSC first: it is the only source publishing authoritative government
     # notifications with a real application deadline, and it needs no key.
-    sources: List[JobSource] = [SscSource(), IsroSource(), CochinShipyardSource()]
+    sources: List[JobSource] = [
+        SscSource(),
+        IsroSource(),
+        CochinShipyardSource(),
+        AaiSource(),
+    ]
     if config.adzuna_app_id and config.adzuna_app_key:
         sources.append(AdzunaSource(app_id=config.adzuna_app_id, app_key=config.adzuna_app_key))
         # Banks and PSUs advertise through Adzuna but rarely make the plain
