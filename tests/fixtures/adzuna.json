@@ -1,0 +1,47 @@
+{
+  "count": 2481,
+  "results": [
+    {
+      "id": "4567890123",
+      "title": "Junior Engineer (Civil) - Recruitment 2026",
+      "created": "2026-09-05T10:00:00Z",
+      "redirect_url": "https://www.adzuna.in/land/ad/4567890123?se=abc&utm_medium=api",
+      "company": { "display_name": "Staff Selection Commission" },
+      "location": { "display_name": "New Delhi, Delhi", "area": ["India", "Delhi", "New Delhi"] },
+      "salary_min": 440000.0,
+      "salary_max": 1420000.0,
+      "salary_is_predicted": "0",
+      "category": { "label": "Engineering Jobs", "tag": "engineering-jobs" }
+    },
+    {
+      "id": "4567890124",
+      "title": "Senior Backend Developer",
+      "created": "2026-09-04T08:30:00Z",
+      "redirect_url": "https://www.adzuna.in/land/ad/4567890124",
+      "company": { "display_name": "Acme Technologies Pvt Ltd" },
+      "location": { "display_name": "Bengaluru, Karnataka", "area": ["India", "Karnataka", "Bengaluru"] },
+      "salary_min": 1800000.0,
+      "salary_max": 2400000.0,
+      "salary_is_predicted": "1",
+      "category": { "label": "IT Jobs", "tag": "it-jobs" }
+    },
+    {
+      "id": "4567890125",
+      "title": "Ministry of Railways - Technician Grade III",
+      "created": "2026-09-03T00:00:00Z",
+      "redirect_url": "https://www.adzuna.in/land/ad/4567890125",
+      "company": { "display_name": "Railway Recruitment Board" },
+      "location": { "display_name": "Chennai, Tamil Nadu", "area": ["India", "Tamil Nadu", "Chennai"] },
+      "salary_is_predicted": "0",
+      "category": { "label": "Public Sector Jobs", "tag": "public-sector-jobs" }
+    },
+    {
+      "id": "4567890126",
+      "title": "Broken Listing With No Company",
+      "created": "2026-09-02T00:00:00Z",
+      "redirect_url": "https://www.adzuna.in/land/ad/4567890126",
+      "location": { "display_name": "Pune, Maharashtra" },
+      "salary_is_predicted": "0"
+    }
+  ]
+}

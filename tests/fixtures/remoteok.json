@@ -1,0 +1,28 @@
+[
+  {
+    "legal": "Please link back to remoteok.com and mention it as the source."
+  },
+  {
+    "slug": "acme-full-stack-developer",
+    "id": "1098765",
+    "epoch": 1757030400,
+    "date": "2026-09-05T00:00:00+00:00",
+    "company": "Acme Remote",
+    "position": "Full Stack Developer",
+    "tags": ["dev", "full stack"],
+    "location": "Worldwide",
+    "salary_min": 60000,
+    "salary_max": 90000,
+    "url": "https://remoteok.com/remote-jobs/1098765",
+    "apply_url": "https://remoteok.com/remote-jobs/1098765"
+  },
+  {
+    "slug": "nameless",
+    "id": "1098766",
+    "epoch": 1757030400,
+    "company": "",
+    "position": "Mystery Role",
+    "location": "",
+    "url": "https://remoteok.com/remote-jobs/1098766"
+  }
+]

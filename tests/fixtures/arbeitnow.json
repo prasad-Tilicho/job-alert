@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "slug": "senior-python-engineer-berlin-123456",
+      "company_name": "Beispiel GmbH",
+      "title": "Senior Python Engineer",
+      "remote": true,
+      "url": "https://www.arbeitnow.com/jobs/companies/beispiel/senior-python-engineer-berlin-123456",
+      "tags": ["python", "django"],
+      "job_types": ["full-time"],
+      "location": "Berlin",
+      "created_at": 1757030400
+    },
+    {
+      "slug": "no-url-job-999",
+      "company_name": "Nowhere Ltd",
+      "title": "Ghost Role",
+      "remote": false,
+      "url": "",
+      "tags": [],
+      "job_types": [],
+      "location": "Hamburg",
+      "created_at": 1757030400
+    }
+  ],
+  "links": { "next": null },
+  "meta": { "current_page": 1 }
+}
