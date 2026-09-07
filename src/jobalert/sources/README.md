@@ -21,6 +21,8 @@ Rules the existing sources follow, and yours should too:
 - **Never invent a field.** If a salary is a prediction or a deadline is a guess,
   leave it `None`. Publishing is automatic, so anything set here is stated as fact.
 - **Let HTTP errors propagate.** `fetch_all()` catches and logs them per source.
+- **Do not clean up titles yourself.** `Job` runs `tidy_title()` on construction,
+  which fixes spacing and punctuation but never spelling or wording.
 - **Add a fixture test.** Save a real response under `tests/fixtures/` and assert
   against it with `respx`; no test may touch the network.
 

@@ -11,6 +11,7 @@ from datetime import date
 from typing import Optional
 
 from jobalert.dedupe import make_job_id
+from jobalert.titles import tidy_title
 
 
 class Category(enum.Enum):
@@ -46,6 +47,10 @@ class Job:
     _job_id: str = field(default="", init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
+        # Titles are normalised here rather than in each source, so a source added
+        # later cannot forget to do it. Only spacing and punctuation are touched -
+        # see :mod:`jobalert.titles`.
+        object.__setattr__(self, "title", tidy_title(self.title))
         # Computed once at construction so the id is stable for the object's lifetime.
         object.__setattr__(
             self,
