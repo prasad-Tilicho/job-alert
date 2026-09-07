@@ -106,3 +106,12 @@ class TestEstimatedSalaryWording:
         )
         assert "Salary:" in text
         assert "estimated" not in text
+
+
+class TestSourceNaming:
+    def test_acronym_sources_are_not_title_cased(self):
+        # A naive title-case turns "ssc" into "Ssc" on every poster footer.
+        from jobalert.attribution import label_for
+
+        assert label_for("ssc") == "SSC"
+        assert label_for("remoteok") == "RemoteOK"

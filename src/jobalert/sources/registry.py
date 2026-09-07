@@ -11,6 +11,7 @@ from jobalert.sources.adzuna import AdzunaSource
 from jobalert.sources.arbeitnow import ArbeitnowSource
 from jobalert.sources.base import JobSource
 from jobalert.sources.remoteok import RemoteOkSource
+from jobalert.sources.ssc import SscSource
 
 if TYPE_CHECKING:  # pragma: no cover
     from jobalert.config import Config
@@ -20,7 +21,9 @@ log = logging.getLogger(__name__)
 
 def build_sources(config: "Config") -> List[JobSource]:
     """Return every source the current configuration can actually use."""
-    sources: List[JobSource] = []
+    # SSC first: it is the only source publishing authoritative government
+    # notifications with a real application deadline, and it needs no key.
+    sources: List[JobSource] = [SscSource()]
     if config.adzuna_app_id and config.adzuna_app_key:
         sources.append(AdzunaSource(app_id=config.adzuna_app_id, app_key=config.adzuna_app_key))
     else:

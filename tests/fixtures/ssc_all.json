@@ -1,0 +1,77 @@
+{
+ "statusCode": "200",
+ "data": [
+  {
+   "examCode": "CHSL",
+   "examName": "Combined Higher Secondary Level (10+2) Examination.",
+   "navigationUrl": "/ApplicationForm/chslform",
+   "description": "Combined Higher Secondary Level (10+2) Examination."
+  },
+  {
+   "examCode": "JE",
+   "examName": "Junior Engineer (Civil, Mechanical & Electrical) Examination",
+   "navigationUrl": "/ApplicationForm/jemecform",
+   "description": "Junior Engineer (Civil, Electrical & Mechanical) Examination"
+  },
+  {
+   "examCode": "MTS",
+   "examName": "Multi Tasking (Non-Technical) Staff Examination",
+   "navigationUrl": "/ApplicationForm/Mtsform",
+   "description": "Multi Tasking (Non-Technical) Staff Examination"
+  },
+  {
+   "examCode": "CGL",
+   "examName": "Combined Graduate Level Examination, 2024",
+   "navigationUrl": "/ApplicationForm/cglform",
+   "description": "Combined Graduate Level Examination"
+  },
+  {
+   "examCode": "CGL",
+   "examName": "Combined Graduate Level Examination, 2025",
+   "navigationUrl": "/ApplicationForm/cglform",
+   "description": "Combined Graduate Level Examination, 2025"
+  },
+  {
+   "examCode": "CHSL",
+   "examName": "Combined Higher Secondary Level (10+2) Examination,2025",
+   "navigationUrl": "/ApplicationForm/chslform",
+   "description": "Combined Higher Secondary Level (10+2) Examination, 2025"
+  },
+  {
+   "examCode": "MTS",
+   "examName": "Multi Tasking (Non-Technical) Staff Examination, 2025",
+   "navigationUrl": "/ApplicationForm/Mtsform",
+   "description": "Multi Tasking (Non-Technical) Staff Examination, 2025"
+  },
+  {
+   "examCode": "JE",
+   "examName": "Junior Engineer (Civil, Mechanical & Electrical) Examination",
+   "navigationUrl": "/ApplicationForm/jemecform",
+   "description": "Junior Engineer (Civil, Electrical & Mechanical) Examination"
+  },
+  {
+   "examCode": "JE",
+   "examName": "Junior Engineer Examination, 2026",
+   "navigationUrl": "/ApplicationForm/jemecform",
+   "description": "Junior Engineer Examination, 2026"
+  },
+  {
+   "examCode": "CGL",
+   "examName": "Combined Graduate Level Examination, 2026",
+   "navigationUrl": "/ApplicationForm/cglform",
+   "description": "Combined Graduate Level Examination, 2026"
+  },
+  {
+   "examCode": "MTS",
+   "examName": "Multi Tasking (Non-Technical) Staff Examination, 2026",
+   "navigationUrl": "/ApplicationForm/Mtsform",
+   "description": "Multi Tasking (Non-Technical) Staff Examination,2026"
+  },
+  {
+   "examCode": "CHSL",
+   "examName": "Combined Higher Secondary Level (10+2) Examination,2026",
+   "navigationUrl": "/ApplicationForm/chslform",
+   "description": "Combined Higher Secondary Level (10+2) Examination."
+  }
+ ]
+}

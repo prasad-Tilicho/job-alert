@@ -170,3 +170,9 @@ class TestBuildSources:
 
         names = [s.name for s in build_sources(Config(repo="a/b"))]
         assert {"arbeitnow", "remoteok"} <= set(names)
+
+    def test_ssc_is_always_present_since_it_needs_no_credentials(self):
+        from jobalert.config import Config
+        from jobalert.sources.registry import build_sources
+
+        assert "ssc" in [s.name for s in build_sources(Config(repo="a/b"))]
