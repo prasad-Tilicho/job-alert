@@ -45,7 +45,7 @@ that comes with scraping aggregator sites like Sarkari Result or FreeJobAlert.
 | **ISRO** | **Working** - see `isro.py` | Plain HTML table at `/Careers.html`. Mixes vacancies with results and interview schedules, so entries must match an inclusion phrase *and* clear an exclusion list. |
 | **Cochin Shipyard** | **Working** - see `cochin.py` | Public sector undertaking. Plain table with post name, unit location and a real closing date. |
 | **AAI (Airports Authority)** | **Working** - see `aai.py` | Recruitment table stating the number of posts, which no other source publishes. Carries no closing date and keeps prior-year notices on the page, so anything older than 45 days is dropped. |
-| ESIC | Promising, not built | Has a Last Date column, but results, shortlists, corrigenda and addenda share the table. Needs the same include/exclude discipline as ISRO. |
+| **ESIC** | **Working** - see `esic.py` | Hospital and medical recruitment across India, paginated. Results, shortlists, corrigenda and addenda share the table, so rows must match an inclusion phrase and clear an exclusion list. Deadlines are shown when stated and omitted otherwise. |
 | NPCIL, HPCL, BEML | Reachable, worth a look | 9-30 table rows each; not yet inspected in detail. |
 | Union Bank of India | Unsafe to parse | Notifications and their *cancellations* sit in one flat list with no status field. There is no reliable way to tell an open recruitment from a cancelled one, and posting a cancelled vacancy wastes someone's application. |
 | SBI, Bank of Baroda, Indian Bank | JS-rendered | Careers pages serve no listings in HTML. |

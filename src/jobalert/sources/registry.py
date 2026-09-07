@@ -12,6 +12,7 @@ from jobalert.sources.arbeitnow import ArbeitnowSource
 from jobalert.sources.base import JobSource
 from jobalert.sources.aai import AaiSource
 from jobalert.sources.cochin import CochinShipyardSource
+from jobalert.sources.esic import EsicSource
 from jobalert.sources.isro import IsroSource
 from jobalert.sources.remoteok import RemoteOkSource
 from jobalert.sources.ssc import SscSource
@@ -37,6 +38,7 @@ def build_sources(config: "Config") -> List[JobSource]:
         IsroSource(),
         CochinShipyardSource(),
         AaiSource(),
+        EsicSource(),
     ]
     if config.adzuna_app_id and config.adzuna_app_key:
         sources.append(AdzunaSource(app_id=config.adzuna_app_id, app_key=config.adzuna_app_key))
