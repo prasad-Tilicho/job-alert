@@ -279,8 +279,8 @@ class PosterRenderer:
             theme.ORG_LINE_SPACING,
         )
 
-    def _meta_rows(self, job: Job) -> List[Tuple[str, List[str], int]]:
-        """Label, wrapped value lines, and pixel height for each detail row."""
+    def _meta_rows(self, job: Job) -> List[Tuple[str, List[str]]]:
+        """Label and wrapped value lines for each detail row."""
         value_font = self._fonts.get("regular", theme.VALUE_SIZE)
         pairs = [("LOCATION", job.location)]
         if job.salary:
@@ -295,14 +295,41 @@ class PosterRenderer:
         if job.application_fee:
             pairs.append(("FEE", job.application_fee))
 
-        rows: List[Tuple[str, List[str], int]] = []
-        for label, value in pairs:
-            lines = wrap_text(value, theme.CONTENT_WIDTH, value_font.getlength)[: theme.VALUE_MAX_LINES]
-            height = theme.LABEL_SIZE + theme.GAP_SM + block_height(
-                len(lines), theme.VALUE_SIZE, theme.META_LINE_SPACING
-            )
-            rows.append((label, lines, height))
-        return rows
+        return [
+            (label, wrap_text(value, theme.CONTENT_WIDTH, value_font.getlength)[: theme.VALUE_MAX_LINES])
+            for label, value in pairs
+        ]
+
+    @staticmethod
+    def _rows_height(
+        rows: Sequence[Tuple[str, List[str]]], row_gap: int, label_gap: int
+    ) -> int:
+        """Total pixel height of the detail rows at the given spacing."""
+        if not rows:
+            return 0
+        heights = [
+            theme.LABEL_SIZE
+            + label_gap
+            + block_height(len(lines), theme.VALUE_SIZE, theme.META_LINE_SPACING)
+            for _, lines in rows
+        ]
+        return sum(heights) + row_gap * (len(rows) - 1)
+
+    def _fit_spacing(
+        self, rows: Sequence[Tuple[str, List[str]]], available: float
+    ) -> Tuple[int, int, int]:
+        """Choose the loosest spacing whose rows fit. Returns (row_gap, label_gap, total).
+
+        Tightening the gaps keeps every row on the poster; dropping a row loses a
+        fact the reader needs, so spacing gives way first.
+        """
+        row_gap, label_gap = theme.META_SPACING_STEPS[-1]
+        total = self._rows_height(rows, row_gap, label_gap)
+        for candidate_row_gap, candidate_label_gap in theme.META_SPACING_STEPS:
+            candidate_total = self._rows_height(rows, candidate_row_gap, candidate_label_gap)
+            if candidate_total <= available:
+                return candidate_row_gap, candidate_label_gap, candidate_total
+        return row_gap, label_gap, total
 
     def _draw_details(
         self,
@@ -311,28 +338,25 @@ class PosterRenderer:
         top_limit: float,
         bottom_limit: float,
     ) -> None:
-        """Draw the divider and detail rows as one block, anchored to the bottom.
+        """Draw the divider and detail rows as one block, centred in the gap.
 
-        Anchoring downwards keeps a short title from leaving a dead zone in the
-        lower half of the poster. When the title is long enough that the block
-        would collide with it, the block falls back to flowing from the top.
+        Centring keeps a short title from leaving a void in the lower half, and
+        the spacing tightens before any row is dropped.
         """
         rows = self._meta_rows(job)
-        total = sum(height for _, _, height in rows) + theme.GAP_MD * (len(rows) - 1)
+        if not rows:
+            return
 
-        # Centre the group in the space between the title and the strip. Bottom-
-        # anchoring leaves one large void under a short title; centring splits it
-        # into two smaller margins that read as deliberate spacing. A job with no
-        # salary and no deadline has a single row, so this is the common case.
+        available = bottom_limit - top_limit - theme.GAP_MD
+        row_gap, label_gap, total = self._fit_spacing(rows, available)
+
         group_height = theme.GAP_MD + total
         floor = top_limit + theme.GAP_MD
-        available = bottom_limit - top_limit
-        divider_y = top_limit + max(theme.GAP_MD, (available - group_height) / 2)
+        divider_y = top_limit + max(theme.GAP_MD, (bottom_limit - top_limit - group_height) / 2)
         if divider_y < floor:
             divider_y = floor
         meta_top = divider_y + theme.GAP_MD
         if meta_top + total > bottom_limit:
-            # Not enough room to centre: fall back to sitting on the strip.
             meta_top = max(floor + theme.GAP_MD, bottom_limit - total)
             divider_y = meta_top - theme.GAP_MD
 
@@ -345,10 +369,7 @@ class PosterRenderer:
         label_font = self._fonts.get("bold", theme.LABEL_SIZE)
         value_font = self._fonts.get("regular", theme.VALUE_SIZE)
         cursor = meta_top
-        for label, lines, height in rows:
-            if cursor + height > bottom_limit + 1:
-                # Out of room: omit the row rather than overlap the deadline strip.
-                break
+        for label, lines in rows:
             _draw_tracked(
                 draw,
                 (theme.MARGIN, cursor + theme.LABEL_SIZE / 2),
@@ -357,11 +378,11 @@ class PosterRenderer:
                 theme.TEXT_MUTED,
                 theme.LABEL_TRACKING,
             )
-            cursor += theme.LABEL_SIZE + theme.GAP_SM
+            cursor += theme.LABEL_SIZE + label_gap
             cursor = _draw_lines(
                 draw, theme.MARGIN, cursor, lines, value_font, theme.TEXT, theme.META_LINE_SPACING
             )
-            cursor += theme.GAP_MD
+            cursor += row_gap
 
     def _draw_action_strip(
         self,

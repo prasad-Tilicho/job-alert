@@ -51,6 +51,9 @@ LABEL_TRACKING = 3.0
 VALUE_SIZE = 34
 VALUE_MAX_LINES = 2
 META_LINE_SPACING = 1.25
+# (gap between rows, gap between a label and its value), tried loosest first.
+# A dense government poster carries four rows and needs the tighter steps.
+META_SPACING_STEPS = ((30, 16), (22, 12), (16, 9), (12, 7))
 
 PILL_TEXT_SIZE = 26
 DATE_TEXT_SIZE = 26

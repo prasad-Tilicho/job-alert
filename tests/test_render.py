@@ -100,8 +100,8 @@ class TestSalaryAndStripLabels:
         # An unlabelled prediction would read as the employer's stated offer.
         estimated = make_job(salary="Rs 18.0L - 24.0L per year", salary_is_estimated=True)
         stated = make_job(salary="Rs 18.0L - 24.0L per year", salary_is_estimated=False)
-        assert [label for label, _, _ in renderer._meta_rows(estimated)] == ["LOCATION", "SALARY (EST.)"]
-        assert [label for label, _, _ in renderer._meta_rows(stated)] == ["LOCATION", "SALARY"]
+        assert [label for label, _ in renderer._meta_rows(estimated)] == ["LOCATION", "SALARY (EST.)"]
+        assert [label for label, _ in renderer._meta_rows(stated)] == ["LOCATION", "SALARY"]
 
     def test_a_job_without_a_deadline_shows_its_posting_date(self, renderer, tmp_path):
         # Rather than a generic call to action, when we know when it was posted.
@@ -137,13 +137,13 @@ class TestStripContent:
 class TestEligibilityRows:
     def test_age_limit_and_fee_appear_when_the_source_provides_them(self, renderer):
         job = make_job(salary=None, age_limit="18 - 32 years", application_fee="Rs 100")
-        assert [label for label, _, _ in renderer._meta_rows(job)] == [
+        assert [label for label, _ in renderer._meta_rows(job)] == [
             "LOCATION", "AGE LIMIT", "FEE",
         ]
 
     def test_they_are_absent_when_unknown(self, renderer):
         job = make_job(salary=None, age_limit=None, application_fee=None)
-        assert [label for label, _, _ in renderer._meta_rows(job)] == ["LOCATION"]
+        assert [label for label, _ in renderer._meta_rows(job)] == ["LOCATION"]
 
     def test_a_government_poster_with_every_row_still_renders(self, renderer, tmp_path):
         job = make_job(external_id="full", salary=None, age_limit="18 - 32 years",
@@ -177,15 +177,54 @@ class TestGlyphCoverage:
 class TestApplyWindowRow:
     def test_shows_the_window_when_both_dates_are_known(self, renderer):
         job = make_job(salary=None, start_date=date(2026, 9, 2), last_date=date(2026, 9, 22))
-        labels = [label for label, _, _ in renderer._meta_rows(job)]
+        labels = [label for label, _ in renderer._meta_rows(job)]
         assert "APPLY WINDOW" in labels
 
     def test_is_absent_without_an_opening_date(self, renderer):
         job = make_job(salary=None, start_date=None, last_date=date(2026, 9, 22))
-        assert "APPLY WINDOW" not in [label for label, _, _ in renderer._meta_rows(job)]
+        assert "APPLY WINDOW" not in [label for label, _ in renderer._meta_rows(job)]
 
     def test_a_poster_with_window_age_and_fee_still_renders(self, renderer, tmp_path):
         job = make_job(external_id="dense", salary=None, start_date=date(2026, 9, 2),
                        last_date=date(2026, 9, 22), age_limit="18 - 32 years",
                        application_fee="Rs 100")
         assert render(renderer, tmp_path, job).size == CANVAS
+
+
+class TestAdaptiveSpacing:
+    def test_a_dense_poster_keeps_every_row(self, renderer, tmp_path):
+        # Four rows previously pushed FEE off the poster entirely.
+        job = make_job(
+            title="Junior Engineer Examination, 2026",
+            org="Staff Selection Commission",
+            location="All India",
+            salary=None,
+            start_date=date(2026, 9, 2),
+            last_date=date(2026, 9, 22),
+            age_limit="18 - 32 years",
+            application_fee="Rs 100",
+        )
+        rows = renderer._meta_rows(job)
+        assert [label for label, _ in rows] == [
+            "LOCATION", "APPLY WINDOW", "AGE LIMIT", "FEE",
+        ]
+        assert render(renderer, tmp_path, job).size == CANVAS
+
+    def test_spacing_tightens_only_as_far_as_needed(self, renderer):
+        from jobalert.poster import theme
+
+        rows = renderer._meta_rows(make_job(age_limit="18 - 32 years"))
+        loose_gap, loose_label = theme.META_SPACING_STEPS[0]
+        # Plenty of room: the loosest step wins.
+        row_gap, label_gap, _ = renderer._fit_spacing(rows, available=10000)
+        assert (row_gap, label_gap) == (loose_gap, loose_label)
+
+    def test_spacing_tightens_when_space_is_short(self, renderer):
+        from jobalert.poster import theme
+
+        rows = renderer._meta_rows(
+            make_job(salary="Rs 1L", age_limit="18 - 32", application_fee="Rs 100")
+        )
+        row_gap, label_gap, total = renderer._fit_spacing(rows, available=260)
+        assert (row_gap, label_gap) != theme.META_SPACING_STEPS[0]
+        assert total <= renderer._rows_height(rows, *theme.META_SPACING_STEPS[0])
