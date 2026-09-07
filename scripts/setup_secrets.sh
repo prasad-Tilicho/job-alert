@@ -27,6 +27,13 @@ prompt_secret() {  # prompt_secret VARNAME "Label"
   printf -v "$__var" '%s' "$__value"
 }
 
+prompt_optional() { # prompt_optional VARNAME "Label" - blank is allowed
+  local __var="$1" __label="$2" __value=""
+  read -rsp "$__label (Enter to skip): " __value < /dev/tty
+  echo
+  printf -v "$__var" '%s' "$__value"
+}
+
 prompt_plain() {   # prompt_plain VARNAME "Label"
   local __var="$1" __label="$2" __value=""
   while [ -z "$__value" ]; do
@@ -65,21 +72,37 @@ print(data["access_token"])
 print(f"exchanged successfully; valid for about {days} days", file=sys.stderr)
 ')"
 
+# The Instagram token is the time-critical part - it is already exchanged and safe
+# above. The rest can be skipped now and added by re-running this script later.
 echo
-echo "--- Adzuna (free key, gives you Indian job coverage) ---"
-prompt_secret ADZUNA_APP_ID  "Adzuna app ID"
-prompt_secret ADZUNA_APP_KEY "Adzuna app key"
+echo "--- Adzuna (free key; without it there is no Indian job coverage) ---"
+prompt_optional ADZUNA_APP_ID  "Adzuna app ID"
+prompt_optional ADZUNA_APP_KEY "Adzuna app key"
 
 echo
 echo "--- GitHub ---"
-prompt_secret GH_PAT "Fine-grained PAT (Contents: write, Secrets: write)"
+prompt_optional GH_PAT "Fine-grained PAT (Contents: write, Secrets: write)"
 
 echo
-printf '%s' "$IG_USER_ID"     | gh secret set IG_USER_ID     --repo "$REPO"
-printf '%s' "$LONG_TOKEN"     | gh secret set IG_ACCESS_TOKEN --repo "$REPO"
-printf '%s' "$ADZUNA_APP_ID"  | gh secret set ADZUNA_APP_ID  --repo "$REPO"
-printf '%s' "$ADZUNA_APP_KEY" | gh secret set ADZUNA_APP_KEY --repo "$REPO"
-printf '%s' "$GH_PAT"         | gh secret set GH_PAT         --repo "$REPO"
+printf '%s' "$IG_USER_ID" | gh secret set IG_USER_ID      --repo "$REPO"
+printf '%s' "$LONG_TOKEN" | gh secret set IG_ACCESS_TOKEN --repo "$REPO"
+
+skipped=()
+set_optional() {  # set_optional NAME VALUE
+  if [ -n "$2" ]; then
+    printf '%s' "$2" | gh secret set "$1" --repo "$REPO"
+  else
+    skipped+=("$1")
+  fi
+}
+set_optional ADZUNA_APP_ID  "$ADZUNA_APP_ID"
+set_optional ADZUNA_APP_KEY "$ADZUNA_APP_KEY"
+set_optional GH_PAT         "$GH_PAT"
+
+if [ ${#skipped[@]} -gt 0 ]; then
+  echo
+  echo "Skipped (re-run this script once you have them): ${skipped[*]}"
+fi
 
 echo
 echo "Done. Secrets now set:"
