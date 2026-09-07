@@ -39,7 +39,7 @@ class TestPosterRenderer:
     def test_government_and_private_posters_differ_visually(self, renderer, tmp_path):
         gov = render(renderer, tmp_path, make_job(external_id="g", category=Category.GOVERNMENT))
         pri = render(renderer, tmp_path, make_job(external_id="p", category=Category.PRIVATE))
-        assert list(gov.getdata()) != list(pri.getdata())
+        assert gov.tobytes() != pri.tobytes()
 
     @pytest.mark.parametrize(
         "overrides",
