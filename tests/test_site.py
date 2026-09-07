@@ -91,6 +91,8 @@ class TestExtraFields:
         assert "Applications invited for 500 posts." in html
 
     def test_escapes_a_hostile_description(self, tmp_path):
+        # Escaped text may still contain the words; what matters is that no live
+        # tag reaches the document.
         html = build(tmp_path, [make_job(description='<img src=x onerror=alert(1)>')])
-        assert "onerror=alert" not in html
-        assert "&lt;img" in html
+        assert "<img" not in html
+        assert "&lt;img src=x onerror=alert(1)&gt;" in html
