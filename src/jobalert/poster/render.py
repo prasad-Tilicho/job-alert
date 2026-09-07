@@ -255,12 +255,21 @@ class PosterRenderer:
         rows = self._meta_rows(job)
         total = sum(height for _, _, height in rows) + theme.GAP_MD * (len(rows) - 1)
 
-        meta_top = bottom_limit - total
-        divider_y = meta_top - theme.GAP_MD
+        # Centre the group in the space between the title and the strip. Bottom-
+        # anchoring leaves one large void under a short title; centring splits it
+        # into two smaller margins that read as deliberate spacing. A job with no
+        # salary and no deadline has a single row, so this is the common case.
+        group_height = theme.GAP_MD + total
         floor = top_limit + theme.GAP_MD
+        available = bottom_limit - top_limit
+        divider_y = top_limit + max(theme.GAP_MD, (available - group_height) / 2)
         if divider_y < floor:
             divider_y = floor
-            meta_top = divider_y + theme.GAP_MD
+        meta_top = divider_y + theme.GAP_MD
+        if meta_top + total > bottom_limit:
+            # Not enough room to centre: fall back to sitting on the strip.
+            meta_top = max(floor + theme.GAP_MD, bottom_limit - total)
+            divider_y = meta_top - theme.GAP_MD
 
         draw.line(
             [(theme.MARGIN, divider_y), (CANVAS[0] - theme.MARGIN, divider_y)],
