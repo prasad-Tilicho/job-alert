@@ -20,6 +20,12 @@ if TYPE_CHECKING:  # pragma: no cover
 
 log = logging.getLogger(__name__)
 
+# Keywords for the public-sector pass: state-owned banks, insurers and PSUs.
+PUBLIC_SECTOR_KEYWORDS = (
+    "bank recruitment probationary officer clerk government public sector "
+    "undertaking railway defence PSU nationalised"
+)
+
 
 def build_sources(config: "Config") -> List[JobSource]:
     """Return every source the current configuration can actually use."""
@@ -28,6 +34,17 @@ def build_sources(config: "Config") -> List[JobSource]:
     sources: List[JobSource] = [SscSource(), IsroSource(), CochinShipyardSource()]
     if config.adzuna_app_id and config.adzuna_app_key:
         sources.append(AdzunaSource(app_id=config.adzuna_app_id, app_key=config.adzuna_app_key))
+        # Banks and PSUs advertise through Adzuna but rarely make the plain
+        # recency query, so a second keyword-filtered pass surfaces them.
+        sources.append(
+            AdzunaSource(
+                app_id=config.adzuna_app_id,
+                app_key=config.adzuna_app_key,
+                what_or=PUBLIC_SECTOR_KEYWORDS,
+                max_days_old=21,
+                name="adzuna-public",
+            )
+        )
     else:
         log.warning("adzuna credentials missing; skipping the only India-focused source")
     sources.append(ArbeitnowSource())

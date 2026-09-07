@@ -44,24 +44,39 @@ class AdzunaSource:
 
     name = SOURCE_NAME
 
-    def __init__(self, app_id: str, app_key: str, results_per_page: int = 30, max_days_old: int = 7):
+    def __init__(
+        self,
+        app_id: str,
+        app_key: str,
+        results_per_page: int = 30,
+        max_days_old: int = 7,
+        what_or: str = "",
+        name: str = SOURCE_NAME,
+    ):
         self._app_id = app_id
         self._app_key = app_key
         self._results_per_page = results_per_page
         self._max_days_old = max_days_old
+        # Optional keyword filter. A second instance with public-sector keywords
+        # surfaces bank and PSU roles that the unfiltered recency query buries.
+        self._what_or = what_or
+        # ``name`` identifies the pass for the registry and logs; jobs are always
+        # attributed to "adzuna" so the same listing found by both passes gets one
+        # id and is deduplicated rather than published twice.
+        self.name = name
 
     def fetch(self, client: httpx.Client) -> List[Job]:
-        response = client.get(
-            f"{BASE_URL}/{COUNTRY}/search/1",
-            params={
-                "app_id": self._app_id,
-                "app_key": self._app_key,
-                "results_per_page": self._results_per_page,
-                "max_days_old": self._max_days_old,
-                "sort_by": "date",
-                "content-type": "application/json",
-            },
-        )
+        params = {
+            "app_id": self._app_id,
+            "app_key": self._app_key,
+            "results_per_page": self._results_per_page,
+            "max_days_old": self._max_days_old,
+            "sort_by": "date",
+            "content-type": "application/json",
+        }
+        if self._what_or:
+            params["what_or"] = self._what_or
+        response = client.get(f"{BASE_URL}/{COUNTRY}/search/1", params=params)
         response.raise_for_status()
         results = response.json().get("results") or []
         return [job for job in (self._to_job(row) for row in results) if job is not None]
@@ -85,7 +100,7 @@ class AdzunaSource:
         is_gov = looks_governmental(org, title, category_label)
 
         return Job(
-            source=self.name,
+            source=SOURCE_NAME,
             external_id=str(row.get("id")) if row.get("id") else None,
             title=title.strip(),
             org=org.strip(),

@@ -44,6 +44,11 @@ that comes with scraping aggregator sites like Sarkari Result or FreeJobAlert.
 | IBPS | Dead feed | `www.ibps.in/feed/` returns valid RSS but contains only WordPress placeholder posts ("Hello world!"). Recruitment notices are not published to it. The site also runs a content-copy-protection plugin. |
 | **ISRO** | **Working** - see `isro.py` | Plain HTML table at `/Careers.html`. Mixes vacancies with results and interview schedules, so entries must match an inclusion phrase *and* clear an exclusion list. |
 | **Cochin Shipyard** | **Working** - see `cochin.py` | Public sector undertaking. Plain table with post name, unit location and a real closing date. |
+| Union Bank of India | Unsafe to parse | Notifications and their *cancellations* sit in one flat list with no status field. There is no reliable way to tell an open recruitment from a cancelled one, and posting a cancelled vacancy wastes someone's application. |
+| SBI, Bank of Baroda, Indian Bank | JS-rendered | Careers pages serve no listings in HTML. |
+| IBPS (CRP) | Results only | Provisional allotments and result links, not openings. |
+| LIC | Two listings, no dates | A real table, but only two openings and no closing dates - not worth a module. |
+| PNB, Canara, BOI, Central Bank | 404 / 403 / unreachable | |
 | RRB (Chandigarh, Chennai, Mumbai) | Listings carry no role | Notices are listed as "(04/2026) Notification" - a document number and category, with no job title. Nothing worth posting. |
 | DRDO / RAC (rac.gov.in) | Results, not vacancies | 102 rows, but they are cutoff marks and recommendations rather than openings. |
 | BEL, HAL, NHPC, ECIL, India Post | 404 or empty | Careers URLs moved or are JS-rendered. |

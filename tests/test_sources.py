@@ -176,3 +176,47 @@ class TestBuildSources:
         from jobalert.sources.registry import build_sources
 
         assert "ssc" in [s.name for s in build_sources(Config(repo="a/b"))]
+
+
+class TestAdzunaPublicSectorPass:
+    @respx.mock
+    def test_sends_the_keyword_filter(self, client):
+        route = respx.get(url__startswith="https://api.adzuna.com").mock(
+            return_value=httpx.Response(200, json={"results": []})
+        )
+        AdzunaSource(app_id="i", app_key="k", what_or="bank recruitment", name="adzuna-public").fetch(client)
+        assert route.calls[0].request.url.params["what_or"] == "bank recruitment"
+
+    @respx.mock
+    def test_the_plain_pass_sends_no_keyword_filter(self, client):
+        route = respx.get(url__startswith="https://api.adzuna.com").mock(
+            return_value=httpx.Response(200, json={"results": []})
+        )
+        AdzunaSource(app_id="i", app_key="k").fetch(client)
+        assert "what_or" not in route.calls[0].request.url.params
+
+    @respx.mock
+    def test_both_passes_produce_the_same_job_id_for_one_posting(self, client):
+        # Ids key off the Adzuna listing id, so an overlap is deduplicated rather
+        # than published twice under two source names.
+        respx.get(url__startswith="https://api.adzuna.com").mock(
+            return_value=httpx.Response(200, json=fixture("adzuna.json"))
+        )
+        plain = AdzunaSource(app_id="i", app_key="k").fetch(client)
+        public = AdzunaSource(app_id="i", app_key="k", what_or="bank", name="adzuna-public").fetch(client)
+        assert plain[0].job_id == public[0].job_id
+
+    def test_the_registry_adds_the_public_sector_pass(self):
+        from jobalert.config import Config
+        from jobalert.sources.registry import build_sources
+
+        names = [s.name for s in build_sources(Config(repo="a/b", adzuna_app_id="x", adzuna_app_key="y"))]
+        assert "adzuna" in names and "adzuna-public" in names
+
+    @respx.mock
+    def test_jobs_from_both_passes_are_attributed_to_adzuna(self, client):
+        respx.get(url__startswith="https://api.adzuna.com").mock(
+            return_value=httpx.Response(200, json=fixture("adzuna.json"))
+        )
+        public = AdzunaSource(app_id="i", app_key="k", what_or="bank", name="adzuna-public").fetch(client)
+        assert {job.source for job in public} == {"adzuna"}
