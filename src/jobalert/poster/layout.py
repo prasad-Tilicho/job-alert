@@ -13,6 +13,8 @@ Measure = Callable[[str], float]
 
 ELLIPSIS = "..."
 _WHITESPACE = re.compile(r"\s+")
+# Break after these so a compound token splits where a reader expects it to.
+_SOFT_BREAK = re.compile(r"(?<=[/\\\-\u2013\u2014_])")
 
 
 @dataclass(frozen=True)
@@ -24,8 +26,8 @@ class FittedText:
     truncated: bool
 
 
-def _break_long_word(word: str, max_width: float, measure: Measure) -> List[str]:
-    """Split a word that cannot fit on one line, one character at a time.
+def _break_by_char(word: str, max_width: float, measure: Measure) -> List[str]:
+    """Split a token one character at a time - the last resort.
 
     Always consumes at least one character per chunk, so a max_width smaller than
     a single glyph cannot loop forever.
@@ -39,6 +41,36 @@ def _break_long_word(word: str, max_width: float, measure: Measure) -> List[str]
             current = char
         else:
             current = candidate
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def _break_long_word(word: str, max_width: float, measure: Measure) -> List[str]:
+    """Split a word too wide for one line, preferring natural break points.
+
+    "Scientist/Engineer" must break after the slash rather than mid-word: a
+    headline reading "Scientist/Enginee r" looks like a rendering fault. Only
+    tokens with no punctuation to break on fall back to character splitting.
+    """
+    parts = [part for part in _SOFT_BREAK.split(word) if part]
+    if len(parts) <= 1:
+        return _break_by_char(word, max_width, measure)
+
+    chunks: List[str] = []
+    current = ""
+    for part in parts:
+        candidate = current + part
+        if current and measure(candidate) > max_width:
+            chunks.append(current)
+            current = part
+        else:
+            current = candidate
+        if measure(current) > max_width:
+            # This fragment alone still overflows; split it by character.
+            pieces = _break_by_char(current, max_width, measure)
+            chunks.extend(pieces[:-1])
+            current = pieces[-1]
     if current:
         chunks.append(current)
     return chunks

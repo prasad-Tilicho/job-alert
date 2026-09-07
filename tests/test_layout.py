@@ -83,3 +83,30 @@ class TestFitText:
     def test_rejects_an_empty_size_range(self):
         with pytest.raises(ValueError):
             fit_text("x", max_width=10, max_lines=1, sizes=[], measure_for=self.measure_for)
+
+
+class TestNaturalBreakPoints:
+    def test_breaks_a_compound_token_at_the_slash(self):
+        # "Scientist/Enginee r" on a poster reads as a rendering fault.
+        lines = wrap_text("Scientist/Engineer", max_width=100, measure=fixed_width(10))
+        assert lines == ["Scientist/", "Engineer"]
+
+    def test_breaks_at_a_hyphen(self):
+        assert wrap_text("Chairman-cum-Director", max_width=130, measure=fixed_width(10)) == [
+            "Chairman-cum-",
+            "Director",
+        ]
+
+    def test_still_splits_by_character_when_there_is_nothing_to_break_on(self):
+        assert wrap_text("abcdefghij", max_width=30, measure=fixed_width(10)) == [
+            "abc", "def", "ghi", "j",
+        ]
+
+    def test_a_fragment_wider_than_the_line_still_gets_split(self):
+        lines = wrap_text("ab/cdefghijkl", max_width=30, measure=fixed_width(10))
+        assert all(len(line) * 10 <= 30 for line in lines)
+        assert "".join(lines) == "ab/cdefghijkl"
+
+    def test_no_characters_are_lost_or_duplicated(self):
+        text = "Scientist/Engineer-SD"
+        assert "".join(wrap_text(text, max_width=90, measure=fixed_width(10))) == text
