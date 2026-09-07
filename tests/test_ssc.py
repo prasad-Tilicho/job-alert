@@ -103,3 +103,34 @@ class TestSscSource:
         )
         respx.get(ALL_EXAMS_URL).mock(return_value=httpx.Response(500))
         assert SscSource().fetch(client)
+
+
+class TestEligibilityFields:
+    @respx.mock
+    def test_publishes_the_age_limit_it_does_have(self, client):
+        # SSC publishes no pay figure, so eligibility is the useful fact here.
+        mock_ssc()
+        job = {j.external_id: j for j in SscSource().fetch(client)}["kuy5m41umlgmfbf0"]
+        assert job.age_limit == "18 - 32 years"
+
+    @respx.mock
+    def test_publishes_the_application_fee(self, client):
+        mock_ssc()
+        job = {j.external_id: j for j in SscSource().fetch(client)}["kuy5m41umlgmfbf0"]
+        assert job.application_fee == "Rs 100"
+
+    def test_age_formats_cope_with_a_missing_bound(self):
+        from jobalert.sources.ssc import _age_limit
+
+        assert _age_limit({"minAge": 18, "maxAge": 32}) == "18 - 32 years"
+        assert _age_limit({"maxAge": 30}) == "Up to 30 years"
+        assert _age_limit({"minAge": 21}) == "21 years and above"
+        assert _age_limit({}) is None
+
+    def test_a_zero_or_missing_fee_is_handled(self):
+        from jobalert.sources.ssc import _fee
+
+        assert _fee({"fee": 100}) == "Rs 100"
+        assert _fee({"fee": 0}) == "Rs 0"
+        assert _fee({}) is None
+        assert _fee({"fee": "abc"}) is None

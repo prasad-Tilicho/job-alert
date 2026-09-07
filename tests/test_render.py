@@ -132,3 +132,43 @@ class TestStripContent:
 
         job = make_job(last_date=None, posted_at=None)
         assert _strip_content(job) == ("APPLY NOW", "LINK IN BIO", False)
+
+
+class TestEligibilityRows:
+    def test_age_limit_and_fee_appear_when_the_source_provides_them(self, renderer):
+        job = make_job(salary=None, age_limit="18 - 32 years", application_fee="Rs 100")
+        assert [label for label, _, _ in renderer._meta_rows(job)] == [
+            "LOCATION", "AGE LIMIT", "FEE",
+        ]
+
+    def test_they_are_absent_when_unknown(self, renderer):
+        job = make_job(salary=None, age_limit=None, application_fee=None)
+        assert [label for label, _, _ in renderer._meta_rows(job)] == ["LOCATION"]
+
+    def test_a_government_poster_with_every_row_still_renders(self, renderer, tmp_path):
+        job = make_job(external_id="full", salary=None, age_limit="18 - 32 years",
+                       application_fee="Rs 100", last_date=date(2026, 9, 22))
+        assert render(renderer, tmp_path, job).size == CANVAS
+
+
+class TestBioPrompt:
+    def test_every_poster_points_at_the_bio_link(self, renderer, tmp_path):
+        # Captions are not clickable, so the poster itself must say where to go.
+        for overrides in ({"last_date": date(2026, 10, 15)}, {"last_date": None}):
+            job = make_job(external_id=str(overrides), **overrides)
+            assert render(renderer, tmp_path, job).size == CANVAS
+
+    def test_the_prompt_is_not_repeated_when_the_strip_already_says_it(self, renderer, tmp_path):
+        from jobalert.poster.render import _strip_content
+
+        job = make_job(last_date=None, posted_at=None)
+        assert _strip_content(job)[1] == "LINK IN BIO"
+        assert render(renderer, tmp_path, job).size == CANVAS
+
+
+class TestGlyphCoverage:
+    def test_fixed_poster_strings_are_plain_ascii(self):
+        from jobalert.poster.render import POSTER_STRINGS
+
+        for key, value in POSTER_STRINGS.items():
+            assert value.isascii(), f"{key} contains a character Poppins may not have: {value!r}"

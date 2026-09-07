@@ -21,6 +21,21 @@ from jobalert.poster.layout import Measure, block_height, fit_text, wrap_text
 CANVAS = theme.CANVAS
 JPEG_QUALITY = 88
 
+# Static text drawn on every poster. Poppins has no arrows or dingbats, and a
+# missing glyph renders as a blank box, so these must stay plain ASCII.
+POSTER_STRINGS = {
+    "bio_note": "Apply link in bio",
+    "apply_by": "APPLY BY",
+    "posted": "POSTED",
+    "apply_now": "APPLY NOW",
+    "link_in_bio": "LINK IN BIO",
+    "location": "LOCATION",
+    "salary": "SALARY",
+    "salary_est": "SALARY (EST.)",
+    "age_limit": "AGE LIMIT",
+    "fee": "FEE",
+}
+
 FONT_FILES = {
     "bold": "Poppins-Bold.ttf",
     "semibold": "Poppins-SemiBold.ttf",
@@ -147,6 +162,16 @@ class PosterRenderer:
         strip_bottom = footer_y - theme.FOOTER_SIZE - theme.GAP_LG
         strip_top = strip_bottom - theme.STRIP_HEIGHT
         self._draw_action_strip(draw, strip_label, strip_value, strip_top, strip_bottom, accent)
+        # Instagram captions are not clickable, so every poster has to say where the
+        # link actually is - except when the strip already says exactly that.
+        if strip_value != "LINK IN BIO":
+            draw.text(
+                (width - theme.MARGIN, strip_bottom + theme.GAP_SM - 2),
+                POSTER_STRINGS["bio_note"],
+                font=self._fonts.get("semibold", theme.BIO_NOTE_SIZE),
+                fill=accent,
+                anchor="ra",
+            )
         content_limit = strip_top - theme.GAP_LG
 
         self._draw_details(draw, job, top_limit=cursor, bottom_limit=content_limit)
@@ -254,6 +279,10 @@ class PosterRenderer:
         pairs = [("LOCATION", job.location)]
         if job.salary:
             pairs.append(("SALARY (EST.)" if job.salary_is_estimated else "SALARY", job.salary))
+        if job.age_limit:
+            pairs.append(("AGE LIMIT", job.age_limit))
+        if job.application_fee:
+            pairs.append(("FEE", job.application_fee))
 
         rows: List[Tuple[str, List[str], int]] = []
         for label, value in pairs:

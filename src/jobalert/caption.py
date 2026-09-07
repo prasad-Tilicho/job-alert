@@ -74,6 +74,10 @@ def build_caption(job: Job, handle: str, today: date) -> str:
     if job.salary:
         label = "Salary (estimated)" if job.salary_is_estimated else "Salary"
         details.append(f"\U0001f4b0 {label}: {job.salary.strip()}")
+    if job.age_limit:
+        details.append(f"\U0001f9d1 Age limit: {job.age_limit.strip()}")
+    if job.application_fee:
+        details.append(f"\U0001f9fe Fee: {job.application_fee.strip()}")
     if job.last_date is not None:
         details.append(f"\U0001f5d3️ Apply by: {_format_date(job.last_date)}")
 

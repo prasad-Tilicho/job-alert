@@ -31,6 +31,27 @@ ORGANISATION = "Staff Selection Commission"
 LOCATION = "All India"
 
 
+def _age_limit(row: Dict[str, Any]) -> Optional[str]:
+    """Format SSC's min/max age, tolerating either bound being absent."""
+    low, high = row.get("minAge"), row.get("maxAge")
+    if low and high:
+        return f"{int(low)} - {int(high)} years"
+    if high:
+        return f"Up to {int(high)} years"
+    if low:
+        return f"{int(low)} years and above"
+    return None
+
+
+def _fee(row: Dict[str, Any]) -> Optional[str]:
+    """Base application fee. Category exemptions are set out in the notification."""
+    fee = row.get("fee")
+    try:
+        return f"Rs {int(fee)}" if fee is not None and int(fee) >= 0 else None
+    except (TypeError, ValueError):
+        return None
+
+
 def _parse_date(value: Optional[str]) -> Optional[date]:
     """Parse SSC's mix of plain dates and UTC timestamps."""
     if not value:
@@ -110,6 +131,8 @@ class SscSource:
             category=Category.GOVERNMENT,
             # SSC publishes no pay figure here; the notification PDF carries it.
             salary=None,
+            age_limit=_age_limit(row),
+            application_fee=_fee(row),
             last_date=last_date,
             posted_at=_parse_date(row.get("applicationStartDate")),
             source_url=NOTICE_BOARD,

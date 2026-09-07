@@ -41,6 +41,10 @@ class Job:
     # True when the source predicted the salary rather than the employer stating
     # it. Such figures are shown, but always labelled as estimates.
     salary_is_estimated: bool = False
+    # Government sources publish no pay figure, but do publish eligibility -
+    # which is the first thing that rules an applicant in or out.
+    age_limit: Optional[str] = None
+    application_fee: Optional[str] = None
     last_date: Optional[date] = None
     posted_at: Optional[date] = None
     source_url: Optional[str] = None
