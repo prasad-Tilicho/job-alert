@@ -57,6 +57,11 @@ class Config:
         return self.root / "docs" / "index.html"
 
     @property
+    def health_path(self) -> Path:
+        """Per-source liveness, so a silently broken parser becomes visible."""
+        return self.root / "state" / "health.json"
+
+    @property
     def fonts_dir(self) -> Path:
         return self.root / "assets" / "fonts"
 

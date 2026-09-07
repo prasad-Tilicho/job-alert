@@ -120,6 +120,23 @@ delete request" (verified 2026-09-07). Remove posts in the Instagram app instead
 tests; it would work if the app were migrated to the Facebook Login path, which
 does expose DELETE. It is kept for that reason, not because it works today.
 
+## Source health
+
+Sources are isolated so one dead site cannot kill a run - but that isolation
+means a parser broken by a site redesign fails quietly while runs keep
+succeeding. `state/health.json` tracks what each source returned per run, and the
+workflow fails (so GitHub emails you) when:
+
+- a source **errors 3 runs in a row**, or
+- a source that has produced jobs before returns **0 for 14 runs in a row**.
+
+Zero results are treated more patiently than errors on purpose: SSC genuinely has
+no live exam between cycles, and that is not a fault. A source that has never
+returned anything is never flagged for zeroes.
+
+The failure happens **after** publishing, so an alert never costs you the posts
+that did work. The run log also prints a per-source count every time.
+
 ## Operational notes
 
 - **Start slow.** A brand-new account posting via API from day one looks

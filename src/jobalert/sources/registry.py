@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List, Sequence
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, List, Optional, Sequence
 
 import httpx
 
@@ -60,19 +61,51 @@ def build_sources(config: "Config") -> List[JobSource]:
     return sources
 
 
-def fetch_all(sources: Sequence[JobSource], client: httpx.Client) -> List[Job]:
-    """Fetch from every source, isolating failures.
+@dataclass(frozen=True)
+class SourceOutcome:
+    """What one source did on one run."""
+
+    name: str
+    count: int
+    error: Optional[str] = None
+
+    @property
+    def ok(self) -> bool:
+        return self.error is None
+
+
+@dataclass(frozen=True)
+class FetchResult:
+    """Everything fetched, plus a per-source record for health tracking."""
+
+    jobs: List[Job]
+    outcomes: List[SourceOutcome]
+
+
+def fetch_with_outcomes(sources: Sequence[JobSource], client: httpx.Client) -> FetchResult:
+    """Fetch from every source, isolating failures and recording what each did.
 
     One unreachable API must never cost us the whole run, so each source is
-    wrapped individually and a failure is logged and skipped.
+    wrapped individually. That isolation is also why the outcomes matter: a
+    broken source would otherwise fail silently for weeks.
     """
     collected: List[Job] = []
+    outcomes: List[SourceOutcome] = []
     for source in sources:
         try:
             jobs = source.fetch(client)
         except Exception as exc:  # noqa: BLE001 - deliberately broad: isolate one bad source
             log.error("source %s failed: %s: %s", source.name, type(exc).__name__, exc)
+            outcomes.append(
+                SourceOutcome(name=source.name, count=0, error=f"{type(exc).__name__}: {exc}")
+            )
             continue
         log.info("source %s returned %d jobs", source.name, len(jobs))
+        outcomes.append(SourceOutcome(name=source.name, count=len(jobs)))
         collected.extend(jobs)
-    return collected
+    return FetchResult(jobs=collected, outcomes=outcomes)
+
+
+def fetch_all(sources: Sequence[JobSource], client: httpx.Client) -> List[Job]:
+    """Fetch from every source, isolating failures."""
+    return fetch_with_outcomes(sources, client).jobs

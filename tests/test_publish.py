@@ -268,3 +268,70 @@ class TestIsGlobalRemote:
         job = make_job(external_id="1")
         do_run(config, [job], publisher=FakePublisher(fail_on=[job.job_id]))
         assert load_archive(config.archive_path) == []
+
+
+class TestHealthTracking:
+    def _outcomes(self, *pairs):
+        from jobalert.sources.registry import SourceOutcome
+
+        return [SourceOutcome(name=n, count=c, error=e) for n, c, e in pairs]
+
+    def test_records_health_for_every_source(self, config):
+        from jobalert.health import load_health
+
+        run(config, today=TODAY, jobs=[make_job()], renderer=FakeRenderer(),
+            publisher=FakePublisher(), repo=FakeRepo(),
+            outcomes=self._outcomes(("ssc", 1, None), ("esic", 0, "boom")))
+        health = load_health(config.health_path)
+        assert health["ssc"]["last_count"] == 1
+        assert health["esic"]["consecutive_error"] == 1
+
+    def test_health_is_recorded_even_when_nothing_is_published(self, config):
+        from jobalert.health import load_health
+
+        # A run that publishes nothing is exactly when a broken source matters.
+        result = run(config, today=TODAY, jobs=[], renderer=FakeRenderer(),
+                     publisher=FakePublisher(), repo=FakeRepo(),
+                     outcomes=self._outcomes(("isro", 0, "timeout")))
+        assert result.published == []
+        assert load_health(config.health_path)["isro"]["consecutive_error"] == 1
+
+    def test_a_broken_source_is_reported_on_the_result(self, config):
+        from jobalert.sources.registry import SourceOutcome
+
+        repo = FakeRepo()
+        for _ in range(3):
+            result = run(config, today=TODAY, jobs=[], renderer=FakeRenderer(),
+                         publisher=FakePublisher(), repo=repo,
+                         outcomes=[SourceOutcome(name="esic", count=0, error="503")])
+        assert [name for name, _ in result.unhealthy] == ["esic"]
+
+    def test_a_dry_run_records_no_health(self, config):
+        from jobalert.health import load_health
+
+        run(config, today=TODAY, jobs=[make_job()], renderer=FakeRenderer(),
+            publisher=FakePublisher(), repo=FakeRepo(), dry_run=True,
+            outcomes=self._outcomes(("ssc", 1, None)))
+        assert load_health(config.health_path) == {}
+
+    def test_a_paused_run_records_no_health(self, config):
+        from dataclasses import replace as _replace
+
+        from jobalert.health import load_health
+
+        run(_replace(config, paused=True), today=TODAY, jobs=[make_job()],
+            renderer=FakeRenderer(), publisher=FakePublisher(), repo=FakeRepo(),
+            outcomes=self._outcomes(("ssc", 1, None)))
+        assert load_health(config.health_path) == {}
+
+    def test_publishing_still_happens_when_a_source_is_unhealthy(self, config):
+        # The alert must never cost the posts that did work.
+        from jobalert.sources.registry import SourceOutcome
+
+        repo, publisher = FakeRepo(), FakePublisher()
+        for _ in range(3):
+            result = run(config, today=TODAY, jobs=[make_job(external_id=str(_))],
+                         renderer=FakeRenderer(), publisher=publisher, repo=repo,
+                         outcomes=[SourceOutcome(name="esic", count=0, error="503")])
+        assert result.published
+        assert result.unhealthy

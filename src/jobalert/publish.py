@@ -23,11 +23,12 @@ from jobalert.caption import build_caption
 from jobalert.config import Config, ConfigError, load_config
 from jobalert.dedupe import filter_unposted, load_posted, mark_posted, prune_posted, save_posted
 from jobalert.gitops import commit, head_sha, push, stage
+from jobalert.health import load_health, save_health, summarise, unhealthy_sources, update_health
 from jobalert.instagram import InstagramClient
 from jobalert.models import Category, Job
 from jobalert.poster.render import PosterRenderer
 from jobalert.site import render_site
-from jobalert.sources.registry import build_sources, fetch_all
+from jobalert.sources.registry import SourceOutcome, build_sources, fetch_with_outcomes
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +49,7 @@ class RunResult:
     published: List[str] = field(default_factory=list)
     failed: List[Tuple[str, str]] = field(default_factory=list)
     skipped_paused: bool = False
+    unhealthy: List[Tuple[str, str]] = field(default_factory=list)
 
 
 INDIA_SOURCES = frozenset({"adzuna"})  # Adzuna is queried against its India endpoint.
@@ -121,6 +123,7 @@ def run(
     publisher,
     repo,
     dry_run: bool = False,
+    outcomes: Sequence[SourceOutcome] = (),
 ) -> RunResult:
     """Execute one publishing run over already-fetched ``jobs``."""
     from jobalert.validate import partition_valid  # local import keeps the module graph flat
@@ -128,6 +131,19 @@ def run(
     if config.paused:
         log.warning("PAUSED is set; publishing nothing this run")
         return RunResult(fetched=len(jobs), skipped_paused=True)
+
+    # Recorded before anything else can return early: a run that publishes
+    # nothing is exactly when a broken source needs to be noticed.
+    unhealthy: List[Tuple[str, str]] = []
+    if outcomes and not dry_run:
+        log.info("source results:\n%s", summarise(outcomes))
+        health = update_health(
+            load_health(config.health_path), outcomes, now=datetime.now(timezone.utc)
+        )
+        save_health(config.health_path, health)
+        unhealthy = unhealthy_sources(health)
+        for name, reason in unhealthy:
+            log.error("source %s looks broken: %s", name, reason)
 
     valid, rejected = partition_valid(jobs, today=today)
     for job, reason in rejected:
@@ -141,7 +157,11 @@ def run(
     )
 
     if not selected:
-        return RunResult(fetched=len(jobs), rejected=len(rejected))
+        # Health still needs committing, and it doubles as repository activity
+        # that keeps the cron schedule alive.
+        if not dry_run:
+            repo.save([STATE_DIR_NAME], "chore: record source health")
+        return RunResult(fetched=len(jobs), rejected=len(rejected), unhealthy=unhealthy)
 
     rendered: List[Tuple[Job, Path, str]] = []
     for job in selected:
@@ -188,22 +208,26 @@ def run(
             f"chore: record {len(published)} published job(s)",
         )
 
+    if not published:
+        repo.save([STATE_DIR_NAME], "chore: record source health")
+
     return RunResult(
         fetched=len(jobs),
         rejected=len(rejected),
         selected=len(selected),
         published=published,
         failed=failed,
+        unhealthy=unhealthy,
     )
 
 
-def _fetch_jobs(config: Config) -> List[Job]:
+def _fetch_jobs(config: Config):
     with httpx.Client(
         timeout=HTTP_TIMEOUT,
         follow_redirects=True,
         headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
     ) as client:
-        return fetch_all(build_sources(config), client)
+        return fetch_with_outcomes(build_sources(config), client)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -230,7 +254,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
         config = replace(config, max_posts_per_run=max(1, args.limit))
 
-    jobs = _fetch_jobs(config)
+    fetched = _fetch_jobs(config)
 
     renderer = PosterRenderer(fonts_dir=config.fonts_dir, handle=config.handle)
     with httpx.Client(timeout=HTTP_TIMEOUT, headers={"User-Agent": USER_AGENT}) as client:
@@ -238,8 +262,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         result = run(
             config,
             today=date.today(),
-            jobs=jobs,
+            jobs=fetched.jobs,
             renderer=renderer,
+            outcomes=fetched.outcomes,
             publisher=publisher,
             repo=GitRepoOps(config.root, push_enabled=not args.no_push),
             dry_run=args.dry_run,
@@ -252,6 +277,20 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         len(result.published),
         len(result.failed),
     )
+
+    if result.unhealthy:
+        # Fail after publishing, never before: the posts are fine, the alert is
+        # about a source that has quietly stopped working.
+        print("\nSOURCE HEALTH ALERT", file=sys.stderr)
+        for name, reason in result.unhealthy:
+            print(f"  {name}: {reason}", file=sys.stderr)
+        print(
+            "\nThe run itself succeeded. Check whether the site changed, then fix or "
+            "remove the source.",
+            file=sys.stderr,
+        )
+        return 1
+
     return 1 if result.failed and not result.published else 0
 
 
