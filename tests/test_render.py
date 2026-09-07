@@ -93,3 +93,42 @@ class TestActionStrip:
         for image in (with_date, without):
             colors = image.crop(strip_box).getcolors(maxcolors=100000) or []
             assert len(colors) > 5
+
+
+class TestSalaryAndStripLabels:
+    def test_estimated_salaries_are_labelled_as_estimates(self, renderer):
+        # An unlabelled prediction would read as the employer's stated offer.
+        estimated = make_job(salary="Rs 18.0L - 24.0L per year", salary_is_estimated=True)
+        stated = make_job(salary="Rs 18.0L - 24.0L per year", salary_is_estimated=False)
+        assert [label for label, _, _ in renderer._meta_rows(estimated)] == ["LOCATION", "SALARY (EST.)"]
+        assert [label for label, _, _ in renderer._meta_rows(stated)] == ["LOCATION", "SALARY"]
+
+    def test_a_job_without_a_deadline_shows_its_posting_date(self, renderer, tmp_path):
+        # Rather than a generic call to action, when we know when it was posted.
+        job = make_job(last_date=None, posted_at=date(2026, 9, 5))
+        image = render(renderer, tmp_path, job)
+        assert image.size == CANVAS
+
+    def test_a_job_with_neither_date_still_renders(self, renderer, tmp_path):
+        job = make_job(external_id="nodates", last_date=None, posted_at=None)
+        assert render(renderer, tmp_path, job).size == CANVAS
+
+
+class TestStripContent:
+    def test_a_deadline_wins_over_the_posting_date(self):
+        from jobalert.poster.render import _strip_content
+
+        label, value, uses_posted = _strip_content(make_job(last_date=date(2026, 10, 15)))
+        assert (label, value, uses_posted) == ("APPLY BY", "15 OCT 2026", False)
+
+    def test_falls_back_to_the_posting_date(self):
+        from jobalert.poster.render import _strip_content
+
+        job = make_job(last_date=None, posted_at=date(2026, 9, 5))
+        assert _strip_content(job) == ("POSTED", "05 SEP 2026", True)
+
+    def test_falls_back_to_a_call_to_action_with_no_dates_at_all(self):
+        from jobalert.poster.render import _strip_content
+
+        job = make_job(last_date=None, posted_at=None)
+        assert _strip_content(job) == ("APPLY NOW", "LINK IN BIO", False)

@@ -37,6 +37,9 @@ class Job:
     category: Category = Category.PRIVATE
     external_id: Optional[str] = None
     salary: Optional[str] = None
+    # True when the source predicted the salary rather than the employer stating
+    # it. Such figures are shown, but always labelled as estimates.
+    salary_is_estimated: bool = False
     last_date: Optional[date] = None
     posted_at: Optional[date] = None
     source_url: Optional[str] = None

@@ -89,3 +89,20 @@ class TestAccentedLocations:
     def test_non_latin_locations_do_not_produce_empty_tags(self):
         tags = hashtags_for(make_job(location="बेंगलुरु"))
         assert all(len(tag) > 1 for tag in tags)
+
+
+class TestEstimatedSalaryWording:
+    def test_estimates_are_marked_in_the_caption(self):
+        text = build_caption(
+            make_job(salary="Rs 18.0L - 24.0L per year", salary_is_estimated=True),
+            handle=HANDLE, today=TODAY,
+        )
+        assert "Salary (estimated)" in text
+
+    def test_stated_salaries_are_not_hedged(self):
+        text = build_caption(
+            make_job(salary="Rs 18.0L - 24.0L per year", salary_is_estimated=False),
+            handle=HANDLE, today=TODAY,
+        )
+        assert "Salary:" in text
+        assert "estimated" not in text

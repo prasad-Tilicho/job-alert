@@ -74,11 +74,11 @@ class AdzunaSource:
             log.info("adzuna: skipping incomplete row id=%s", row.get("id"))
             return None
 
-        # A predicted salary is Adzuna's guess, not the employer's offer. Posting it
-        # as fact would mislead followers, so it is dropped rather than shown.
-        salary = None
-        if str(row.get("salary_is_predicted", "1")) == "0":
-            salary = _format_inr(row.get("salary_min"), row.get("salary_max"))
+        # Adzuna predicts most salaries. Dropping them left nearly every Indian
+        # poster with no pay information at all, so they are shown but flagged -
+        # a labelled estimate informs without asserting the employer's offer.
+        salary = _format_inr(row.get("salary_min"), row.get("salary_max"))
+        estimated = str(row.get("salary_is_predicted", "1")) != "0"
 
         category_label = (row.get("category") or {}).get("label") or ""
         is_gov = looks_governmental(org, title, category_label)
@@ -92,6 +92,7 @@ class AdzunaSource:
             apply_url=apply_url.strip(),
             category=Category.GOVERNMENT if is_gov else Category.PRIVATE,
             salary=salary,
+            salary_is_estimated=bool(salary) and estimated,
             posted_at=_parse_date(row.get("created")),
             source_url="https://www.adzuna.in/",
         )

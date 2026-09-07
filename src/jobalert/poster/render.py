@@ -32,6 +32,20 @@ def _format_date(value: date) -> str:
     return value.strftime("%d %b %Y").upper()
 
 
+def _strip_content(job: Job) -> Tuple[str, str, bool]:
+    """Label, value, and whether the value is the posting date.
+
+    A closing date is the most useful thing to show, but most sources publish
+    none. Falling back to the posting date keeps the strip factual rather than
+    inventing a deadline; the third element lets the header avoid repeating it.
+    """
+    if job.last_date is not None:
+        return "APPLY BY", _format_date(job.last_date), False
+    if job.posted_at is not None:
+        return "POSTED", _format_date(job.posted_at), True
+    return "APPLY NOW", "LINK IN BIO", False
+
+
 class FontSet:
     """Loads and caches the bundled typefaces.
 
@@ -118,7 +132,8 @@ class PosterRenderer:
         draw = ImageDraw.Draw(image)
 
         draw.rectangle([0, 0, width, theme.ACCENT_BAR_HEIGHT], fill=accent)
-        self._draw_header(draw, job, accent, today)
+        strip_label, strip_value, strip_shows_posted = _strip_content(job)
+        self._draw_header(draw, job, accent, today, show_date=not strip_shows_posted)
 
         cursor = self._draw_title_and_org(draw, job, accent)
 
@@ -131,7 +146,7 @@ class PosterRenderer:
         # post is left with a dead band where a deadline would have been.
         strip_bottom = footer_y - theme.FOOTER_SIZE - theme.GAP_LG
         strip_top = strip_bottom - theme.STRIP_HEIGHT
-        self._draw_action_strip(draw, job, strip_top, strip_bottom, accent)
+        self._draw_action_strip(draw, strip_label, strip_value, strip_top, strip_bottom, accent)
         content_limit = strip_top - theme.GAP_LG
 
         self._draw_details(draw, job, top_limit=cursor, bottom_limit=content_limit)
@@ -157,7 +172,14 @@ class PosterRenderer:
         overlay = overlay.filter(ImageFilter.GaussianBlur(theme.GLOW_BLUR))
         image.paste(Image.alpha_composite(image.convert("RGBA"), overlay).convert("RGB"), (0, 0))
 
-    def _draw_header(self, draw: ImageDraw.ImageDraw, job: Job, accent, today: date) -> None:
+    def _draw_header(
+        self,
+        draw: ImageDraw.ImageDraw,
+        job: Job,
+        accent,
+        today: date,
+        show_date: bool = True,
+    ) -> None:
         pill_font = self._fonts.get("bold", theme.PILL_TEXT_SIZE)
         label = job.category.label
         text_width = _tracked_width(label, pill_font, theme.LABEL_TRACKING)
@@ -178,6 +200,9 @@ class PosterRenderer:
             theme.LABEL_TRACKING,
         )
 
+        if not show_date:
+            # The strip is already showing this date; printing it twice reads as a bug.
+            return
         stamp = _format_date(job.posted_at or today)
         draw.text(
             (CANVAS[0] - theme.MARGIN, (top + bottom) / 2),
@@ -228,7 +253,7 @@ class PosterRenderer:
         value_font = self._fonts.get("regular", theme.VALUE_SIZE)
         pairs = [("LOCATION", job.location)]
         if job.salary:
-            pairs.append(("SALARY", job.salary))
+            pairs.append(("SALARY (EST.)" if job.salary_is_estimated else "SALARY", job.salary))
 
         rows: List[Tuple[str, List[str], int]] = []
         for label, value in pairs:
@@ -301,21 +326,13 @@ class PosterRenderer:
     def _draw_action_strip(
         self,
         draw: ImageDraw.ImageDraw,
-        job: Job,
+        label: str,
+        value: str,
         top: float,
         bottom: float,
         accent,
     ) -> None:
-        """The accent bar above the footer: a deadline when known, else a CTA.
-
-        A job with no published closing date gets "APPLY NOW / LINK IN BIO" rather
-        than an invented date - the strip must never state something we do not know.
-        """
-        if job.last_date is not None:
-            label, value = "APPLY BY", _format_date(job.last_date)
-        else:
-            label, value = "APPLY NOW", "LINK IN BIO"
-
+        """The accent bar above the footer. Content comes from :func:`_strip_content`."""
         draw.rounded_rectangle(
             [theme.MARGIN, top, CANVAS[0] - theme.MARGIN, bottom],
             radius=theme.STRIP_RADIUS,

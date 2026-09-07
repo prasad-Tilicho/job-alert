@@ -52,15 +52,24 @@ class TestAdzunaSource:
         assert jobs["4567890124"].category is Category.PRIVATE
 
     @respx.mock
-    def test_shows_real_salaries_but_never_predicted_ones(self, client):
+    def test_flags_predicted_salaries_rather_than_stating_them_as_fact(self, client):
         respx.get(url__startswith="https://api.adzuna.com").mock(
             return_value=httpx.Response(200, json=fixture("adzuna.json"))
         )
         jobs = {j.external_id: j for j in AdzunaSource(app_id="id", app_key="key").fetch(client)}
-        assert jobs["4567890123"].salary == "Rs 4.4L - 14.2L per year"
-        # salary_is_predicted == "1": Adzuna guessed it, so we must not state it as fact.
-        assert jobs["4567890124"].salary is None
+
+        stated = jobs["4567890123"]
+        assert stated.salary == "Rs 4.4L - 14.2L per year"
+        assert stated.salary_is_estimated is False
+
+        # salary_is_predicted == "1": shown, but never presented as the employer's offer.
+        predicted = jobs["4567890124"]
+        assert predicted.salary == "Rs 18.0L - 24.0L per year"
+        assert predicted.salary_is_estimated is True
+
+        # No figures at all means no salary, estimated or otherwise.
         assert jobs["4567890125"].salary is None
+        assert jobs["4567890125"].salary_is_estimated is False
 
     @respx.mock
     def test_sends_credentials_and_india_country_path(self, client):
