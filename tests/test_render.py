@@ -172,3 +172,20 @@ class TestGlyphCoverage:
 
         for key, value in POSTER_STRINGS.items():
             assert value.isascii(), f"{key} contains a character Poppins may not have: {value!r}"
+
+
+class TestApplyWindowRow:
+    def test_shows_the_window_when_both_dates_are_known(self, renderer):
+        job = make_job(salary=None, start_date=date(2026, 9, 2), last_date=date(2026, 9, 22))
+        labels = [label for label, _, _ in renderer._meta_rows(job)]
+        assert "APPLY WINDOW" in labels
+
+    def test_is_absent_without_an_opening_date(self, renderer):
+        job = make_job(salary=None, start_date=None, last_date=date(2026, 9, 22))
+        assert "APPLY WINDOW" not in [label for label, _, _ in renderer._meta_rows(job)]
+
+    def test_a_poster_with_window_age_and_fee_still_renders(self, renderer, tmp_path):
+        job = make_job(external_id="dense", salary=None, start_date=date(2026, 9, 2),
+                       last_date=date(2026, 9, 22), age_limit="18 - 32 years",
+                       application_fee="Rs 100")
+        assert render(renderer, tmp_path, job).size == CANVAS

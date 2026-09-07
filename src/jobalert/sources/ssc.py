@@ -133,6 +133,7 @@ class SscSource:
             salary=None,
             age_limit=_age_limit(row),
             application_fee=_fee(row),
+            start_date=_parse_date(row.get("applicationStartDate")),
             last_date=last_date,
             posted_at=_parse_date(row.get("applicationStartDate")),
             source_url=NOTICE_BOARD,

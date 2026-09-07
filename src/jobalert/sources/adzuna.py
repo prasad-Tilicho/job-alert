@@ -13,6 +13,7 @@ import httpx
 
 from jobalert.models import Category, Job
 from jobalert.sources.keywords import looks_governmental
+from jobalert.summarise import summarise
 
 log = logging.getLogger(__name__)
 
@@ -93,6 +94,7 @@ class AdzunaSource:
             category=Category.GOVERNMENT if is_gov else Category.PRIVATE,
             salary=salary,
             salary_is_estimated=bool(salary) and estimated,
+            description=summarise(row.get("description")),
             posted_at=_parse_date(row.get("created")),
             source_url="https://www.adzuna.in/",
         )

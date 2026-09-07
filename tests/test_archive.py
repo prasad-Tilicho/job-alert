@@ -63,3 +63,22 @@ class TestAppendPublished:
         record = append_published([], make_job(salary=None, last_date=None), WHEN)[0]
         assert record["salary"] is None
         assert record["last_date"] is None
+
+
+class TestArchiveCapturesEveryPosterField:
+    def test_eligibility_dates_and_description_survive_the_round_trip(self, tmp_path):
+        from datetime import date as _date
+
+        job = make_job(age_limit="18 - 32 years", application_fee="Rs 100",
+                       start_date=_date(2026, 9, 2), description="Applications invited.")
+        record = append_published([], job, WHEN)[0]
+        assert record["age_limit"] == "18 - 32 years"
+        assert record["application_fee"] == "Rs 100"
+        assert record["start_date"] == "2026-09-02"
+        assert record["description"] == "Applications invited."
+
+    def test_a_job_missing_them_records_nulls_not_missing_keys(self, tmp_path):
+        # A missing key breaks anything reading the archive positionally.
+        record = append_published([], make_job(), WHEN)[0]
+        for key in ("age_limit", "application_fee", "description", "start_date"):
+            assert key in record

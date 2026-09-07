@@ -78,3 +78,19 @@ class TestRenderSite:
         dest = tmp_path / "docs" / "index.html"
         render_site([], handle="@h", dest=dest, generated_at=WHEN)
         assert dest.exists()
+
+
+class TestExtraFields:
+    def test_shows_eligibility_and_description(self, tmp_path):
+        from datetime import date as _date
+
+        html = build(tmp_path, [make_job(age_limit="18 - 32 years", application_fee="Rs 100",
+                                         description="Applications invited for 500 posts.")])
+        assert "18 - 32 years" in html
+        assert "Rs 100" in html
+        assert "Applications invited for 500 posts." in html
+
+    def test_escapes_a_hostile_description(self, tmp_path):
+        html = build(tmp_path, [make_job(description='<img src=x onerror=alert(1)>')])
+        assert "onerror=alert" not in html
+        assert "&lt;img" in html

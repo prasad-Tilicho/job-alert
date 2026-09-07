@@ -78,7 +78,12 @@ def build_caption(job: Job, handle: str, today: date) -> str:
         details.append(f"\U0001f9d1 Age limit: {job.age_limit.strip()}")
     if job.application_fee:
         details.append(f"\U0001f9fe Fee: {job.application_fee.strip()}")
-    if job.last_date is not None:
+    if job.start_date and job.last_date:
+        details.append(
+            f"\U0001f4c5 Apply between: {_format_date(job.start_date)}"
+            f" and {_format_date(job.last_date)}"
+        )
+    elif job.last_date is not None:
         details.append(f"\U0001f5d3️ Apply by: {_format_date(job.last_date)}")
 
     tail_parts = [
@@ -91,12 +96,22 @@ def build_caption(job: Job, handle: str, today: date) -> str:
     tail = "\n".join(tail_parts)
 
     head = f"{icon} {job.title.strip()}\n{job.org.strip()}"
-    body = "\n".join([head, "", "\n".join(details), "", tail])
+    blocks = [head, "", "\n".join(details)]
+    if job.description:
+        blocks += ["", job.description.strip()]
+    blocks += ["", tail]
+    body = "\n".join(blocks)
 
     if len(body) <= MAX_CAPTION_LEN:
         return body
 
-    # Shrink only the headline; everything below it is either factual or required.
+    # Over the limit: drop the description first. It is useful context, but the
+    # facts, the attribution and the hashtags all earn their place ahead of it.
+    body = "\n".join([head, "", "\n".join(details), "", tail])
+    if len(body) <= MAX_CAPTION_LEN:
+        return body
+
+    # Still over: shrink the headline, which is now the only expendable text.
     overflow = len(body) - MAX_CAPTION_LEN + len(ELLIPSIS)
     trimmed_title = job.title.strip()[: max(0, len(job.title.strip()) - overflow)].rstrip()
     head = f"{icon} {trimmed_title}{ELLIPSIS}\n{job.org.strip()}"

@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 import httpx
 
 from jobalert.models import Category, Job
+from jobalert.summarise import summarise
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +48,7 @@ class ArbeitnowSource:
             location=location,
             apply_url=url,
             category=Category.PRIVATE,
+            description=summarise(row.get("description")),
             posted_at=_epoch_to_date(row.get("created_at")),
             source_url="https://www.arbeitnow.com/",
         )

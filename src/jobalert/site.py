@@ -54,6 +54,13 @@ def _card(record: Record) -> str:
     if record.get("salary"):
         suffix = " (estimated)" if record.get("salary_is_estimated") else ""
         meta.append(f'<span class="meta-item">\U0001f4b0 {_esc(record["salary"])}{_esc(suffix)}</span>')
+    if record.get("age_limit"):
+        meta.append(f'<span class="meta-item">\U0001f9d1 {_esc(record["age_limit"])}</span>')
+    if record.get("application_fee"):
+        meta.append(f'<span class="meta-item">\U0001f9fe {_esc(record["application_fee"])}</span>')
+
+    summary = record.get("description")
+    desc = f'<p class="desc">{_esc(summary)}</p>' if summary else ""
 
     deadline = _pretty_date(record.get("last_date"))
     if deadline:
@@ -78,6 +85,7 @@ def _card(record: Record) -> str:
         <h2>{_esc(record.get("title"))}</h2>
         <p class="org">{_esc(record.get("org"))}</p>
         <div class="meta">{"".join(meta)}</div>
+        {desc}
         <div class="foot">{stamp}{action}</div>
         <p class="src">via {_esc(label_for(str(record.get("source") or "")))}</p>
       </article>"""
@@ -142,6 +150,7 @@ def _page(records: Sequence[Record], handle: str, generated_at: datetime) -> str
     white-space: nowrap;
   }}
   .apply-disabled {{ background: var(--line); color: var(--muted); }}
+  .desc {{ color: var(--muted); font-size: 14px; margin: -4px 0 16px; }}
   .src {{ color: #5f6c85; font-size: 11px; margin: 14px 0 0; }}
   .empty {{ color: var(--muted); text-align: center; padding: 48px 0; }}
   footer {{

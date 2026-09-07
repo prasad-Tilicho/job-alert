@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 import httpx
 
 from jobalert.models import Category, Job
+from jobalert.summarise import summarise
 
 log = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ class RemoteOkSource:
             apply_url=url,
             category=Category.PRIVATE,
             salary=_format_usd(row.get("salary_min"), row.get("salary_max")),
+            description=summarise(row.get("description")),
             posted_at=_epoch_to_date(row.get("epoch")),
             source_url="https://remoteok.com/",
         )

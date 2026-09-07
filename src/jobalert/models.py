@@ -45,7 +45,12 @@ class Job:
     # which is the first thing that rules an applicant in or out.
     age_limit: Optional[str] = None
     application_fee: Optional[str] = None
+    # Opening and closing of the application window. ``last_date`` is the closing
+    # date and drives the poster's APPLY BY strip.
+    start_date: Optional[date] = None
     last_date: Optional[date] = None
+    # A short plain-text summary from the source, if it publishes one.
+    description: Optional[str] = None
     posted_at: Optional[date] = None
     source_url: Optional[str] = None
     _job_id: str = field(default="", init=False, repr=False, compare=False)

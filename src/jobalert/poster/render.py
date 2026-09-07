@@ -33,6 +33,7 @@ POSTER_STRINGS = {
     "salary": "SALARY",
     "salary_est": "SALARY (EST.)",
     "age_limit": "AGE LIMIT",
+    "apply_window": "APPLY WINDOW",
     "fee": "FEE",
 }
 
@@ -148,7 +149,12 @@ class PosterRenderer:
 
         draw.rectangle([0, 0, width, theme.ACCENT_BAR_HEIGHT], fill=accent)
         strip_label, strip_value, strip_shows_posted = _strip_content(job)
-        self._draw_header(draw, job, accent, today, show_date=not strip_shows_posted)
+        # The window row already states the opening date; repeating it in the
+        # header is the same duplication the POSTED strip avoids.
+        shows_window = bool(job.start_date and job.last_date)
+        self._draw_header(
+            draw, job, accent, today, show_date=not (strip_shows_posted or shows_window)
+        )
 
         cursor = self._draw_title_and_org(draw, job, accent)
 
@@ -279,6 +285,11 @@ class PosterRenderer:
         pairs = [("LOCATION", job.location)]
         if job.salary:
             pairs.append(("SALARY (EST.)" if job.salary_is_estimated else "SALARY", job.salary))
+        if job.start_date and job.last_date:
+            pairs.append((
+                "APPLY WINDOW",
+                f"{job.start_date.strftime('%d %b')} - {job.last_date.strftime('%d %b %Y')}",
+            ))
         if job.age_limit:
             pairs.append(("AGE LIMIT", job.age_limit))
         if job.application_fee:

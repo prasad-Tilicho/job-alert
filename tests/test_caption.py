@@ -115,3 +115,30 @@ class TestSourceNaming:
 
         assert label_for("ssc") == "SSC"
         assert label_for("remoteok") == "RemoteOK"
+
+
+class TestDescriptionAndWindow:
+    def test_includes_the_description_when_there_is_room(self):
+        text = caption(description="Applications are invited for 500 posts across India.")
+        assert "500 posts across India" in text
+
+    def test_states_the_application_window_when_both_dates_are_known(self):
+        from datetime import date as _date
+
+        text = caption(start_date=_date(2026, 9, 2), last_date=_date(2026, 9, 22))
+        assert "Apply between: 02 Sep 2026 and 22 Sep 2026" in text
+
+    def test_falls_back_to_apply_by_with_only_a_closing_date(self):
+        text = caption(start_date=None)
+        assert "Apply by: 15 Oct 2026" in text
+
+    def test_a_long_description_is_dropped_before_the_title_is_trimmed(self):
+        # Attribution and hashtags are required; the description is not.
+        text = build_caption(
+            make_job(title="Assistant Section Officer", description="x " * 1500),
+            handle=HANDLE, today=TODAY,
+        )
+        assert len(text) <= MAX_CAPTION_LEN
+        assert "Assistant Section Officer" in text
+        assert "Adzuna" in text
+        assert "#" in text
