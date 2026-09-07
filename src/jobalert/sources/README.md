@@ -35,6 +35,19 @@ notice boards or RSS feeds. Those notices are government works in the public
 domain, so parsing them carries none of the terms-of-service or copyright risk
 that comes with scraping aggregator sites like Sarkari Result or FreeJobAlert.
 
+### Portals already investigated (2026-09-07)
+
+| Portal | Result | Notes |
+| --- | --- | --- |
+| **SSC** | **Working** - see `ssc.py` | Angular site backed by a public JSON API at `/api/admin/5.1/liveExams` and `/allExams`. No key. Publishes real application closing dates. |
+| UPSC | Blocked | `403 Access Denied` from the Akamai edge, even with a normal user agent. Would fail on CI runners regardless. |
+| IBPS | Dead feed | `www.ibps.in/feed/` returns valid RSS but contains only WordPress placeholder posts ("Hello world!"). Recruitment notices are not published to it. The site also runs a content-copy-protection plugin. |
+| NCS | No accessible API | Angular SPA; every route including `/robots.txt` returns the same shell, and the JS bundle did not yield an API base. Worth another look. |
+
+Do **not** add aggregator sites such as Sarkari Result or FreeJobAlert. Their
+compiled listings are copyrighted, their terms prohibit reproduction, and the
+Instagram account is the asset at risk in a complaint.
+
 An RSS-backed source is the same shape as the above, with `feedparser` or a small
 XML parse in place of `response.json()`. Set `category=Category.GOVERNMENT`
 directly rather than relying on the keyword heuristic in `keywords.py`, and be
