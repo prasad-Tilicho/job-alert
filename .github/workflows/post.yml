@@ -48,6 +48,7 @@ jobs:
           IG_HANDLE: ${{ vars.IG_HANDLE }}
           MAX_POSTS_PER_RUN: ${{ vars.MAX_POSTS_PER_RUN }}
           PAUSED: ${{ vars.PAUSED }}
+          ENABLE_GEO_RESTRICTED: ${{ vars.ENABLE_GEO_RESTRICTED }}
         run: |
           python -m jobalert.publish ${{ inputs.dry_run && '--dry-run' || '' }}
 

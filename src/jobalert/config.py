@@ -35,6 +35,10 @@ class Config:
     handle: str = "@jobalerts"
     max_posts_per_run: int = DEFAULT_MAX_POSTS_PER_RUN
     paused: bool = False
+    # Some Indian government sites refuse connections from datacentre IPs. They
+    # work from a residential Indian network but time out on GitHub's runners,
+    # so they are opt-in rather than silently broken.
+    enable_geo_restricted: bool = False
     root: Path = PROJECT_ROOT
 
     @property
@@ -128,5 +132,6 @@ def load_config(
         handle=_clean(env, "IG_HANDLE") or "@jobalerts",
         max_posts_per_run=_parse_max_posts(raw_max) if raw_max else DEFAULT_MAX_POSTS_PER_RUN,
         paused=_parse_bool(_clean(env, "PAUSED")),
+        enable_geo_restricted=_parse_bool(_clean(env, "ENABLE_GEO_RESTRICTED")),
         root=root or PROJECT_ROOT,
     )

@@ -75,6 +75,7 @@ Repository **variables** (all optional):
 | `IG_HANDLE` | `@jobalerts` | Shown in the poster footer and caption |
 | `MAX_POSTS_PER_RUN` | `3` | Clamped to 10 |
 | `PAUSED` | unset | Set to `true` to stop publishing without touching code |
+| `ENABLE_GEO_RESTRICTED` | unset | Enables the AAI and ESIC sources. They time out from GitHub runners; only set this on a runner with an Indian residential connection |
 
 ## Local use
 

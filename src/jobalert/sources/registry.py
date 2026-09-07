@@ -34,13 +34,16 @@ def build_sources(config: "Config") -> List[JobSource]:
     """Return every source the current configuration can actually use."""
     # SSC first: it is the only source publishing authoritative government
     # notifications with a real application deadline, and it needs no key.
-    sources: List[JobSource] = [
-        SscSource(),
-        IsroSource(),
-        CochinShipyardSource(),
-        AaiSource(),
-        EsicSource(),
-    ]
+    sources: List[JobSource] = [SscSource(), IsroSource(), CochinShipyardSource()]
+
+    # AAI and ESIC serve fine from an Indian residential network but refuse the
+    # TCP connection from GitHub's runners, so enabling them there only produces
+    # a permanent health alert. Set ENABLE_GEO_RESTRICTED=true when running from
+    # a network they accept - a self-hosted runner, or locally.
+    if config.enable_geo_restricted:
+        sources.extend([AaiSource(), EsicSource()])
+    else:
+        log.info("geo-restricted sources (aai, esic) disabled; set ENABLE_GEO_RESTRICTED=true to use them")
     if config.adzuna_app_id and config.adzuna_app_key:
         sources.append(AdzunaSource(app_id=config.adzuna_app_id, app_key=config.adzuna_app_key))
         # Banks and PSUs advertise through Adzuna but rarely make the plain

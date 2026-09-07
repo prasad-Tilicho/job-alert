@@ -57,3 +57,11 @@ class TestLoadConfig:
         config = load_config(FULL_ENV)
         url = config.raw_url("deadbeef", "out/abc123.jpg")
         assert url == "https://raw.githubusercontent.com/prasad/job-alert/deadbeef/out/abc123.jpg"
+
+
+class TestGeoRestrictedFlag:
+    def test_defaults_to_off(self):
+        assert load_config(FULL_ENV).enable_geo_restricted is False
+
+    def test_is_parsed_from_the_environment(self):
+        assert load_config({**FULL_ENV, "ENABLE_GEO_RESTRICTED": "true"}).enable_geo_restricted is True

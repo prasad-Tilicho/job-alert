@@ -220,3 +220,21 @@ class TestAdzunaPublicSectorPass:
         )
         public = AdzunaSource(app_id="i", app_key="k", what_or="bank", name="adzuna-public").fetch(client)
         assert {job.source for job in public} == {"adzuna"}
+
+
+class TestGeoRestrictedSources:
+    def test_are_disabled_by_default(self):
+        # They time out from GitHub's runners; enabling them there would produce
+        # a permanent health alert rather than jobs.
+        from jobalert.config import Config
+        from jobalert.sources.registry import build_sources
+
+        names = [s.name for s in build_sources(Config(repo="a/b"))]
+        assert "aai" not in names and "esic" not in names
+
+    def test_are_included_when_explicitly_enabled(self):
+        from jobalert.config import Config
+        from jobalert.sources.registry import build_sources
+
+        names = [s.name for s in build_sources(Config(repo="a/b", enable_geo_restricted=True))]
+        assert "aai" in names and "esic" in names
