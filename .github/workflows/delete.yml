@@ -1,5 +1,11 @@
 name: Delete Instagram posts
 
+# KNOWN LIMITATION (verified 2026-09-07): the Instagram API with Instagram Login
+# does not support deleting media. Every id returns "Unsupported delete request".
+# This workflow is kept because the code is correct and would work if the app is
+# ever migrated to the Facebook Login path, which does expose DELETE. Until then,
+# remove posts in the Instagram app.
+#
 # Manual only, and deliberately so: deleting a post cannot be undone.
 on:
   workflow_dispatch:

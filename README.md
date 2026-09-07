@@ -110,6 +110,16 @@ anchors.
 To enable it once: **Settings -> Pages -> Source: Deploy from a branch ->
 `main` / `/docs`**.
 
+## Deleting posts
+
+**Posts cannot be deleted through the API on this setup.** The Instagram API with
+Instagram Login has no working DELETE for media - every id returns "Unsupported
+delete request" (verified 2026-09-07). Remove posts in the Instagram app instead.
+
+`.github/workflows/delete.yml` implements deletion correctly and is covered by
+tests; it would work if the app were migrated to the Facebook Login path, which
+does expose DELETE. It is kept for that reason, not because it works today.
+
 ## Operational notes
 
 - **Start slow.** A brand-new account posting via API from day one looks
