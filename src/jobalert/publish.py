@@ -18,6 +18,7 @@ from typing import List, Optional, Sequence, Tuple
 
 import httpx
 
+from jobalert.archive import append_published, load_archive, save_archive
 from jobalert.caption import build_caption
 from jobalert.config import Config, ConfigError, load_config
 from jobalert.dedupe import filter_unposted, load_posted, mark_posted, prune_posted, save_posted
@@ -25,6 +26,7 @@ from jobalert.gitops import commit, head_sha, push, stage
 from jobalert.instagram import InstagramClient
 from jobalert.models import Category, Job
 from jobalert.poster.render import PosterRenderer
+from jobalert.site import render_site
 from jobalert.sources.registry import build_sources, fetch_all
 
 log = logging.getLogger(__name__)
@@ -33,6 +35,7 @@ HTTP_TIMEOUT = 30.0
 USER_AGENT = "jobalert/0.1 (+https://github.com/)"
 OUT_DIR_NAME = "out"
 STATE_DIR_NAME = "state"
+SITE_DIR_NAME = "docs"
 
 
 @dataclass(frozen=True)
@@ -158,6 +161,7 @@ def run(
 
     published: List[str] = []
     failed: List[Tuple[str, str]] = []
+    archive = load_archive(config.archive_path)
     now = datetime.now(timezone.utc)
     for job, dest, caption in rendered:
         image_url = config.raw_url(sha, f"{OUT_DIR_NAME}/{dest.name}")
@@ -171,10 +175,18 @@ def run(
         published.append(job.job_id)
         # Recorded only on success, so a failure stays eligible for the next run.
         posted = mark_posted(posted, job.job_id, now)
+        archive = append_published(archive, job, now)
 
     if published:
         save_posted(config.state_path, prune_posted(posted, now=now))
-        repo.save([STATE_DIR_NAME], f"chore: record {len(published)} published job(s)")
+        save_archive(config.archive_path, archive)
+        # The landing page is what "link in bio" points at, so it is regenerated
+        # in the same commit as the state that produced it.
+        render_site(archive, handle=config.handle, dest=config.site_path, generated_at=now)
+        repo.save(
+            [STATE_DIR_NAME, SITE_DIR_NAME],
+            f"chore: record {len(published)} published job(s)",
+        )
 
     return RunResult(
         fetched=len(jobs),

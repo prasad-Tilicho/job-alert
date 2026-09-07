@@ -94,6 +94,22 @@ Run the tests:
 .venv/bin/python -m pytest --cov=src/jobalert --cov-report=term-missing
 ```
 
+## Landing page
+
+Instagram captions are not clickable, so every poster says "link in bio". That
+link points at `docs/index.html`, served free by GitHub Pages at
+`https://prasad-tilicho.github.io/job-alert/`.
+
+The page is regenerated from `state/published.json` in the same commit that
+records a publish, so it never drifts from what the account has actually posted.
+It is mobile-first (nearly every visitor arrives from the Instagram app), static,
+and every job field is HTML-escaped - titles come from third-party APIs and land
+on a public page. Links that are not https are rendered as plain text rather than
+anchors.
+
+To enable it once: **Settings -> Pages -> Source: Deploy from a branch ->
+`main` / `/docs`**.
+
 ## Operational notes
 
 - **Start slow.** A brand-new account posting via API from day one looks

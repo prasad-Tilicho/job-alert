@@ -47,6 +47,16 @@ class Config:
         return self.root / "state" / "posted.json"
 
     @property
+    def archive_path(self) -> Path:
+        """Published jobs with enough detail to rebuild the landing page."""
+        return self.root / "state" / "published.json"
+
+    @property
+    def site_path(self) -> Path:
+        """The page the Instagram bio links to, served by GitHub Pages from /docs."""
+        return self.root / "docs" / "index.html"
+
+    @property
     def fonts_dir(self) -> Path:
         return self.root / "assets" / "fonts"
 

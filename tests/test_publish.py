@@ -241,3 +241,30 @@ class TestIsGlobalRemote:
         publisher = FakePublisher()
         assert do_run(config, jobs, publisher=publisher).published == []
         assert publisher.calls == []
+
+    def test_publishing_updates_the_archive_and_landing_page(self, config):
+        from jobalert.archive import load_archive
+
+        job = make_job(external_id="1")
+        do_run(config, [job])
+
+        archive = load_archive(config.archive_path)
+        assert [record["job_id"] for record in archive] == [job.job_id]
+
+        page = config.site_path.read_text(encoding="utf-8")
+        assert job.title in page
+        assert job.apply_url in page
+
+    def test_the_landing_page_is_committed_with_the_state(self, config):
+        repo = FakeRepo()
+        do_run(config, [make_job()], repo=repo)
+        state_commit_paths = repo.saves[1][0]
+        assert "state" in state_commit_paths
+        assert "docs" in state_commit_paths
+
+    def test_a_failed_publish_leaves_the_archive_untouched(self, config):
+        from jobalert.archive import load_archive
+
+        job = make_job(external_id="1")
+        do_run(config, [job], publisher=FakePublisher(fail_on=[job.job_id]))
+        assert load_archive(config.archive_path) == []
