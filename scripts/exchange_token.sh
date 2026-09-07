@@ -74,6 +74,19 @@ if "client secret" in low:
 
   If you reset that secret recently, the short-lived token you generated BEFORE
   the reset is also dead - generate a new one after copying the new secret."""
+elif "revoked" in low or "session key" in low:
+    cause = """The token was revoked - it predates your last app-secret reset.
+
+  Resetting an app secret invalidates every token issued before it. The secret
+  itself is now correct (you would see a "client secret" error otherwise), so:
+
+    1. Do NOT reset the app secret again. It is right.
+    2. API setup with Instagram login -> Generate access tokens ->
+       "Generate token" on your account.
+    3. Copy it and rerun this within a few minutes.
+
+  If you keep resetting the secret after generating a token, you will loop on
+  this error forever - the order has to be secret first, token second."""
 elif "expired" in low or "session" in low:
     cause = """The short-lived token has expired.
 
