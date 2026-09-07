@@ -43,7 +43,11 @@ that comes with scraping aggregator sites like Sarkari Result or FreeJobAlert.
 | UPSC | Blocked | `403 Access Denied` from the Akamai edge, even with a normal user agent. Would fail on CI runners regardless. |
 | IBPS | Dead feed | `www.ibps.in/feed/` returns valid RSS but contains only WordPress placeholder posts ("Hello world!"). Recruitment notices are not published to it. The site also runs a content-copy-protection plugin. |
 | **ISRO** | **Working** - see `isro.py` | Plain HTML table at `/Careers.html`. Mixes vacancies with results and interview schedules, so entries must match an inclusion phrase *and* clear an exclusion list. |
-| RRB (Chandigarh, Chennai, Mumbai) | Reachable, unstructured | 200 OK but notices are not in tables; would need a bespoke parser per board. |
+| **Cochin Shipyard** | **Working** - see `cochin.py` | Public sector undertaking. Plain table with post name, unit location and a real closing date. |
+| RRB (Chandigarh, Chennai, Mumbai) | Listings carry no role | Notices are listed as "(04/2026) Notification" - a document number and category, with no job title. Nothing worth posting. |
+| DRDO / RAC (rac.gov.in) | Results, not vacancies | 102 rows, but they are cutoff marks and recommendations rather than openings. |
+| BEL, HAL, NHPC, ECIL, India Post | 404 or empty | Careers URLs moved or are JS-rendered. |
+| RRB (old note) | Reachable, unstructured | 200 OK but notices are not in tables; would need a bespoke parser per board. |
 | TNPSC | Timed out | No response within 18s from this network. |
 | DRDO, India Post | 404 on the paths tried | Careers URLs have moved; worth rechecking. |
 | AIIMS, RBI, Indian Army | Reachable, JS-rendered | 200 OK but no rows or dates in the served HTML. |

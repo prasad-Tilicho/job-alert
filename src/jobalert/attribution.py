@@ -13,6 +13,7 @@ SOURCE_LABELS: Dict[str, str] = {
     "remoteok": "RemoteOK",
     "ssc": "SSC",
     "isro": "ISRO",
+    "cochin": "Cochin Shipyard",
 }
 
 
