@@ -335,3 +335,55 @@ class TestHealthTracking:
                          outcomes=[SourceOutcome(name="esic", count=0, error="503")])
         assert result.published
         assert result.unhealthy
+
+
+class TestAlternatingSelection:
+    def _mixed(self, gov_count, private_count):
+        gov = [make_job(external_id=f"g{i}", category=Category.GOVERNMENT) for i in range(gov_count)]
+        pri = [make_job(external_id=f"p{i}", category=Category.PRIVATE) for i in range(private_count)]
+        return gov + pri
+
+    def test_alternates_government_and_private(self):
+        picked = select_jobs(self._mixed(5, 5), limit=6)
+        assert [j.category for j in picked] == [
+            Category.GOVERNMENT, Category.PRIVATE,
+            Category.GOVERNMENT, Category.PRIVATE,
+            Category.GOVERNMENT, Category.PRIVATE,
+        ]
+
+    def test_leads_with_government(self):
+        assert select_jobs(self._mixed(3, 3), limit=1)[0].category is Category.GOVERNMENT
+
+    def test_falls_back_when_private_runs_out(self):
+        # Government dominates the feed; a short private pool must not cap the run.
+        picked = select_jobs(self._mixed(5, 1), limit=5)
+        assert len(picked) == 5
+        assert sum(1 for j in picked if j.category is Category.PRIVATE) == 1
+
+    def test_falls_back_when_government_runs_out(self):
+        picked = select_jobs(self._mixed(1, 5), limit=5)
+        assert len(picked) == 5
+        assert picked[0].category is Category.GOVERNMENT
+
+    def test_respects_the_limit(self):
+        assert len(select_jobs(self._mixed(20, 20), limit=5)) == 5
+
+    def test_returns_everything_when_the_limit_exceeds_supply(self):
+        assert len(select_jobs(self._mixed(2, 1), limit=10)) == 3
+
+    def test_is_reproducible(self):
+        jobs = self._mixed(6, 6)
+        assert select_jobs(jobs, limit=6) == select_jobs(list(reversed(jobs)), limit=6)
+
+    def test_still_prefers_india_within_the_private_side(self):
+        # Adzuna is queried against its India endpoint, so an Adzuna job counts as
+        # India whatever its location says; the foreign job needs another source.
+        india = make_job(external_id="i", category=Category.PRIVATE, location="Pune, India")
+        foreign = make_job(external_id="f", source="arbeitnow", category=Category.PRIVATE,
+                           location="Berlin")
+        gov = make_job(external_id="g", category=Category.GOVERNMENT)
+        picked = select_jobs([foreign, india, gov], limit=2)
+        assert picked[1] is india
+
+    def test_an_empty_pool_yields_nothing(self):
+        assert select_jobs([], limit=5) == []

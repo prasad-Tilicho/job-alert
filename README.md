@@ -73,7 +73,7 @@ Repository **variables** (all optional):
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `IG_HANDLE` | `@jobalerts` | Shown in the poster footer and caption |
-| `MAX_POSTS_PER_RUN` | `3` | Clamped to 10 |
+| `MAX_POSTS_PER_RUN` | `3` | Clamped to 10. Two scheduled runs a day, so 5 means 10 posts/day |
 | `PAUSED` | unset | Set to `true` to stop publishing without touching code |
 | `ENABLE_GEO_RESTRICTED` | unset | Enables the AAI and ESIC sources. They time out from GitHub runners; only set this on a runner with an Indian residential connection |
 
@@ -142,6 +142,9 @@ that did work. The run log also prints a per-source count every time.
 
 - **Start slow.** A brand-new account posting via API from day one looks
   automated. Set `MAX_POSTS_PER_RUN=1` for the first week or two.
+- **Posts alternate government and private**, leading with government. Government
+  listings outnumber everything else, so taking the top N straight off the ranked
+  list would fill a whole day with government posts and starve the private feed.
 - **Publishing is fully automatic**, so `validate.py` is the only thing between a
   bad parse and your followers. It drops jobs with expired or implausible
   deadlines, missing employers, and non-HTTPS links. Widen it, never narrow it.

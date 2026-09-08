@@ -11,6 +11,7 @@ import argparse
 import logging
 import re
 import sys
+from collections import deque
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -84,17 +85,36 @@ def relevance_tier(job: Job) -> int:
 
 
 def select_jobs(jobs: Sequence[Job], limit: int) -> List[Job]:
-    """Rank and cap the jobs to publish this run.
+    """Rank and cap the jobs to publish this run, alternating GOVT and private.
 
-    Government postings lead because they are the account's reason to exist and
-    are the scarcest; then India-relevant, then remote, then the rest. Ties break
-    on recency, and finally on job id so the order is reproducible across runs.
+    Government listings outnumber everything else that survives ranking, so
+    taking the top N straight off the sorted list would fill an entire day with
+    government posts and starve the private feed. Alternating keeps both visible
+    while still leading with government, which is the account's reason to exist.
+
+    When one side runs out the other simply continues, so a limit is always
+    filled if there are enough jobs at all. Ordering within each side is by
+    relevance, then recency, then job id, so runs are reproducible.
     """
     def rank(job: Job):
         recency = -job.posted_at.toordinal() if job.posted_at else 0
         return (relevance_tier(job), recency, job.job_id)
 
-    return sorted(jobs, key=rank)[:limit]
+    government = deque(sorted(
+        (job for job in jobs if job.category is Category.GOVERNMENT), key=rank
+    ))
+    private = deque(sorted(
+        (job for job in jobs if job.category is not Category.GOVERNMENT), key=rank
+    ))
+
+    picked: List[Job] = []
+    want_government = True
+    while len(picked) < limit and (government or private):
+        preferred = government if want_government else private
+        fallback = private if want_government else government
+        picked.append((preferred or fallback).popleft())
+        want_government = not want_government
+    return picked
 
 
 class GitRepoOps:
