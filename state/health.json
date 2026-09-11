@@ -13,7 +13,7 @@
     "consecutive_zero": 0,
     "last_count": 30,
     "last_error": null,
-    "last_success_at": "2026-09-10T15:54:08.775160+00:00"
+    "last_success_at": "2026-09-11T08:37:20.690231+00:00"
   },
   "adzuna-public": {
     "best_count": 30,
@@ -21,7 +21,7 @@
     "consecutive_zero": 0,
     "last_count": 30,
     "last_error": null,
-    "last_success_at": "2026-09-10T15:54:08.775160+00:00"
+    "last_success_at": "2026-09-11T08:37:20.690231+00:00"
   },
   "arbeitnow": {
     "best_count": 250,
@@ -29,7 +29,7 @@
     "consecutive_zero": 0,
     "last_count": 242,
     "last_error": null,
-    "last_success_at": "2026-09-10T15:54:08.775160+00:00"
+    "last_success_at": "2026-09-11T08:37:20.690231+00:00"
   },
   "cochin": {
     "best_count": 9,
@@ -37,7 +37,7 @@
     "consecutive_zero": 0,
     "last_count": 9,
     "last_error": null,
-    "last_success_at": "2026-09-10T15:54:08.775160+00:00"
+    "last_success_at": "2026-09-11T08:37:20.690231+00:00"
   },
   "esic": {
     "best_count": 0,
@@ -53,15 +53,15 @@
     "consecutive_zero": 0,
     "last_count": 10,
     "last_error": null,
-    "last_success_at": "2026-09-10T15:54:08.775160+00:00"
+    "last_success_at": "2026-09-11T08:37:20.690231+00:00"
   },
   "remoteok": {
     "best_count": 92,
     "consecutive_error": 0,
     "consecutive_zero": 0,
-    "last_count": 72,
+    "last_count": 73,
     "last_error": null,
-    "last_success_at": "2026-09-10T15:54:08.775160+00:00"
+    "last_success_at": "2026-09-11T08:37:20.690231+00:00"
   },
   "ssc": {
     "best_count": 3,
@@ -69,6 +69,6 @@
     "consecutive_zero": 0,
     "last_count": 3,
     "last_error": null,
-    "last_success_at": "2026-09-10T15:54:08.775160+00:00"
+    "last_success_at": "2026-09-11T08:37:20.690231+00:00"
   }
 }
