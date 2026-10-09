@@ -9,18 +9,18 @@
   },
   "adzuna": {
     "best_count": 30,
-    "consecutive_error": 0,
+    "consecutive_error": 1,
     "consecutive_zero": 0,
-    "last_count": 30,
-    "last_error": null,
+    "last_count": 0,
+    "last_error": "HTTPStatusError: Server error '503 Service Temporarily Unavailable' for url 'https://api.adzuna.com/v1/api/jobs/in/search/1?app_id=9eb31906&app_key=490cc165401bb17e2843ddeea10691a6&results_per_page=30&max_days_old=7&sort_by=date&content-type=application%2Fjson'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
     "last_success_at": "2026-10-09T11:08:32.468576+00:00"
   },
   "adzuna-public": {
     "best_count": 30,
-    "consecutive_error": 0,
+    "consecutive_error": 1,
     "consecutive_zero": 0,
-    "last_count": 30,
-    "last_error": null,
+    "last_count": 0,
+    "last_error": "HTTPStatusError: Server error '503 Service Temporarily Unavailable' for url 'https://api.adzuna.com/v1/api/jobs/in/search/1?app_id=9eb31906&app_key=490cc165401bb17e2843ddeea10691a6&results_per_page=30&max_days_old=21&sort_by=date&content-type=application%2Fjson&what_or=bank+recruitment+probationary+officer+clerk+government+public+sector+undertaking+railway+defence+PSU+nationalised'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
     "last_success_at": "2026-10-09T11:08:32.468576+00:00"
   },
   "arbeitnow": {
@@ -29,7 +29,7 @@
     "consecutive_zero": 0,
     "last_count": 321,
     "last_error": null,
-    "last_success_at": "2026-10-09T11:08:32.468576+00:00"
+    "last_success_at": "2026-10-09T18:00:29.378294+00:00"
   },
   "cochin": {
     "best_count": 13,
@@ -37,7 +37,7 @@
     "consecutive_zero": 0,
     "last_count": 5,
     "last_error": null,
-    "last_success_at": "2026-10-09T11:08:32.468576+00:00"
+    "last_success_at": "2026-10-09T18:00:29.378294+00:00"
   },
   "esic": {
     "best_count": 0,
@@ -53,7 +53,7 @@
     "consecutive_zero": 0,
     "last_count": 6,
     "last_error": null,
-    "last_success_at": "2026-10-09T11:08:32.468576+00:00"
+    "last_success_at": "2026-10-09T18:00:29.378294+00:00"
   },
   "remoteok": {
     "best_count": 92,
@@ -61,12 +61,12 @@
     "consecutive_zero": 0,
     "last_count": 62,
     "last_error": null,
-    "last_success_at": "2026-10-09T11:08:32.468576+00:00"
+    "last_success_at": "2026-10-09T18:00:29.378294+00:00"
   },
   "ssc": {
     "best_count": 3,
     "consecutive_error": 0,
-    "consecutive_zero": 4,
+    "consecutive_zero": 5,
     "last_count": 0,
     "last_error": "ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)",
     "last_success_at": "2026-10-06T17:59:20.958943+00:00"
