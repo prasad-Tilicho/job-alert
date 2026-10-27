@@ -13,7 +13,7 @@
     "consecutive_zero": 0,
     "last_count": 30,
     "last_error": null,
-    "last_success_at": "2026-10-26T18:18:43.144129+00:00"
+    "last_success_at": "2026-10-27T09:38:26.591943+00:00"
   },
   "adzuna-public": {
     "best_count": 30,
@@ -21,15 +21,15 @@
     "consecutive_zero": 0,
     "last_count": 30,
     "last_error": null,
-    "last_success_at": "2026-10-26T18:18:43.144129+00:00"
+    "last_success_at": "2026-10-27T09:38:26.591943+00:00"
   },
   "arbeitnow": {
     "best_count": 321,
     "consecutive_error": 0,
     "consecutive_zero": 0,
-    "last_count": 293,
+    "last_count": 296,
     "last_error": null,
-    "last_success_at": "2026-10-26T18:18:43.144129+00:00"
+    "last_success_at": "2026-10-27T09:38:26.591943+00:00"
   },
   "cochin": {
     "best_count": 13,
@@ -37,7 +37,7 @@
     "consecutive_zero": 0,
     "last_count": 10,
     "last_error": null,
-    "last_success_at": "2026-10-26T18:18:43.144129+00:00"
+    "last_success_at": "2026-10-27T09:38:26.591943+00:00"
   },
   "esic": {
     "best_count": 0,
@@ -53,20 +53,20 @@
     "consecutive_zero": 0,
     "last_count": 8,
     "last_error": null,
-    "last_success_at": "2026-10-26T18:18:43.144129+00:00"
+    "last_success_at": "2026-10-27T09:38:26.591943+00:00"
   },
   "remoteok": {
     "best_count": 92,
     "consecutive_error": 0,
     "consecutive_zero": 0,
-    "last_count": 45,
+    "last_count": 44,
     "last_error": null,
-    "last_success_at": "2026-10-26T18:18:43.144129+00:00"
+    "last_success_at": "2026-10-27T09:38:26.591943+00:00"
   },
   "ssc": {
     "best_count": 3,
     "consecutive_error": 0,
-    "consecutive_zero": 39,
+    "consecutive_zero": 40,
     "last_count": 0,
     "last_error": "ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)",
     "last_success_at": "2026-10-06T17:59:20.958943+00:00"
